@@ -58,4 +58,14 @@ A robust and feature-rich Paytm clone that allows users to sign up, sign in, tra
 To install the required dependencies for the project, run the following command:
 
 ```bash
-npm install
+      npm install
+
+## Setup
+
+### 1. Configure the `.env` File
+
+Set up the environment variables for the database connection and JWT secrets in the `.env` file:
+
+```env
+DATABASE_URL=postgresql://username:password@localhost:5432/paytm_clone
+JWT_SECRET=your_jwt_secret
