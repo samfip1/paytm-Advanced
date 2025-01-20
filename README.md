@@ -57,10 +57,12 @@ A robust and feature-rich Paytm clone that allows users to sign up, sign in, tra
 ### Install Dependencies
 To install the required dependencies for the project, run the following command:
 
-```bash
-      npm install
+   ```bash
+         npm install
 
-## Setup
+
+
+# Setup
 
 ### 1. Configure the `.env` File
 
@@ -69,3 +71,35 @@ Set up the environment variables for the database connection and JWT secrets in 
 ```env
 DATABASE_URL=postgresql://username:password@localhost:5432/paytm_clone
 JWT_SECRET=your_jwt_secret
+
+
+
+2. Run Database Migrations
+To run database migrations and set up the schema, use the following command:
+
+bash
+Copy
+Edit
+npx prisma migrate dev
+3. Start the Development Server
+To start the development server, run:
+
+bash
+Copy
+Edit
+npm run dev
+Usage
+Admin Access
+Admin users can manage accounts via the Admin Panel:
+
+Delete Users: Admins can remove users if they detect violations or cheating.
+Deduct Funds: Admins can penalize users by deducting funds from their accounts for fraudulent activities.
+User Access
+Regular users can:
+
+Transfer Money: Users can transfer money to other users.
+View Balance: Users can view the balance in their accounts.
+Future Enhancements
+Implement two-factor authentication for added security.
+Add a transaction history feature for better tracking.
+Introduce a wallet recharge and cashback system.
