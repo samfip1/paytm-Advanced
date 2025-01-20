@@ -48,3 +48,14 @@ A robust and feature-rich Paytm clone that allows users to sign up, sign in, tra
    ```bash
    git clone https://github.com/your-repo/paytm-clone.git
    cd paytm-clone
+
+
+# Paytm Clone
+
+## Installation Instructions
+
+### Install Dependencies
+To install the required dependencies for the project, run the following command:
+
+```bash
+npm install
