@@ -58,6 +58,7 @@ const endpoints_config_1 = __importDefault(require("./Middleware/endpoints.confi
 const prisma = new client_1.PrismaClient();
 const app = (0, express_1.default)();
 const SECRET_KEY = endpoints_config_1.default.SK;
+const SECRET_KET_ADMIN = endpoints_config_1.default.SK_Admin;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
@@ -416,26 +417,30 @@ app.post('/admin/signup', (req, res) => __awaiter(void 0, void 0, void 0, functi
         res.status(500).json({ message: errorMessage });
     }
 }));
-function signinadmin(admin) {
+function signinAdmin(admin) {
     return __awaiter(this, void 0, void 0, function* () {
         const { username, password } = admin;
-        const adminLoger = yield prisma.admin.findFirst({
+        const adminLogger = yield prisma.admin.findFirst({
             where: {
                 username: username
             }
         });
-        if (!adminLoger || bcryptjs_1.default.compareSync(adminLoger.password, password)) {
-            throw new Error("Invalid Credentials ");
+        if (!adminLogger || !bcryptjs_1.default.compareSync(password, adminLogger.password)) {
+            throw new Error("Invalid Credentials");
         }
+        return adminLogger;
     });
 }
 app.post('/admin/signin', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, password } = req.body;
     try {
-        const ADuser = yield signinadmin(req.body);
-        console.log(req.body);
-        console.log(ADuser);
+        const loggedInAdmin = yield signinAdmin({ username, password });
+        const token = jsonwebtoken_1.default.sign({ id: loggedInAdmin.id, username: loggedInAdmin.username }, SECRET_KET_ADMIN);
+        res.status(200).json({ token });
     }
     catch (error) {
+        const errorMessage = error instanceof Error ? error.message : ":Error Occured";
+        res.status(401).json({ message: errorMessage });
     }
 }));
 // Start Server

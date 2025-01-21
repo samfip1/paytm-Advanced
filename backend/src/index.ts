@@ -535,11 +535,19 @@ app.post('/admin/signin', async (req, res) => {
 
         const token = jwt.sign(
             { id: loggedInAdmin.id, username: loggedInAdmin.username },
-            SECRET_KET_ADMIN, 
-            { expiresIn: "1h" } // Set token expiration time
+            SECRET_KET_ADMIN
         );
 
-        res.status(200).json({ token });
+        res.cookie("token", token, { httpOnly: true });
+        res.status(200).json({
+            message: "Successfully logged in",
+            user: {
+                id: loggedInAdmin.id,
+                username: loggedInAdmin.username,
+                token: token,
+                adminid: loggedInAdmin.adminId
+            }
+        });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : ":Error Occured"
         res.status(401).json({ message: errorMessage });
@@ -548,7 +556,71 @@ app.post('/admin/signin', async (req, res) => {
 
 
 
-// Start Server
+app.put('/admin/signin/update', async (req, res) => {
+    const {username, newUsername} = req.body;
+
+    const adminUpdate = await prisma.admin.findFirst({
+        where: {
+            username : newUsername
+        }
+    })
+
+    if(adminUpdate) {
+        throw new Error("This username already Exists");        
+    }
+
+    const newadminUsernmae = await prisma.admin.update({
+        where: {
+            username : username
+        },
+        data : {
+            username : newUsername
+        }
+    })
+
+    if(newadminUsernmae) {
+        res.status(200).json({
+            message : "Username Updated Scuccesfully"
+        })
+    }
+    if(!newadminUsernmae) {
+        res.status(500).json({
+            message : "Something is Dowm from Our end"
+        })
+    }
+})
+
+
+
+app.get('/admin/signin/profile', async (req, res) => {
+
+    const {username} = req.body;
+
+    try {
+    const AdminPRofile = await prisma.admin.findUnique({
+        where: {
+            username : username
+        },
+        select: {
+            id: true,
+            username: true,
+            email: true,
+            name: true,
+            phone: true,
+            adminId: true
+        }
+    })
+    
+    res.status(200).send(AdminPRofile);
+    }
+    catch (error) {
+        console.log(error)
+    }
+    
+    
+})
+
+
 app.listen(3000, () => {
     console.log("Server is running on port 3000");
 });
