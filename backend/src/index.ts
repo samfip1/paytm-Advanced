@@ -309,41 +309,77 @@ app.get("/user/signin/account", authenticateToken, async (req: Request, res: Res
 
 async function transfer(senderusername: string, recieveusernmae: string, amount: number): Promise<void> {
     try {
-      await prisma.$transaction(async (tx) => {
-        // Fetch sender's account balance before updating
-        const sender = await tx.user.findUnique({
-          where: { username: senderusername },
-          select: { Money: true },
+        await prisma.$transaction(async (tx) => {
+            // Fetch sender's account balance before updating
+            const sender = await tx.user.findUnique({
+            where: { username: senderusername },
+            select: {
+                Money: true,
+                userid : true
+                },
+            });
+
+            if (!sender) {
+                throw new Error(`Sender with username ${senderusername} does not exist.`);
+            }
+            const senderId = sender.userid;
+    
+            // Check if sender has enough balance
+            if (sender.Money < amount) {
+            throw new Error(`${senderusername} doesn't have enough balance to send ${amount}`);
+            }
+
+    
+            // Decrement amount from sender's account
+            const updatedSender = await tx.user.update({
+            where: { username: senderusername },
+            data: { Money: { decrement: amount } },
+            });
+    
+            console.log(`Sender's new balance: ${updatedSender.Money}`);
+
+            const reciver = await tx.user.findUnique({
+                where: { username: senderusername },
+                select: {
+                    Money: true,
+                    userid : true
+                },
+            });
+
+
+            
+    
+            // Increment amount in recipient's account
+            const recipient = await tx.user.update({
+            where: { 
+                username: recieveusernmae,
+            },
+            select: {
+                userid: true,
+                Money: true,
+            },
+            data: { Money: { increment: amount } },
+            });
+
+            const recieverID = recipient.userid;
+
+            const payment = await prisma.transaction.create({
+                data: {
+                    senderId : senderId,
+                    receiverId: recieverID,
+                    senderUsername: senderusername,
+                    receiverUsername: recieveusernmae,
+                    amount: amount
+                }
+            })
+            console.log(payment);
+    
+            console.log(`Recipient's new balance: ${recipient.Money}`);
         });
-  
-        if (!sender) {
-          throw new Error(`Sender with email ${senderusername} does not exist.`);
-        }
-  
-        // Check if sender has enough balance
-        if (sender.Money < amount) {
-          throw new Error(`${senderusername} doesn't have enough balance to send ${amount}`);
-        }
-  
-        // Decrement amount from sender's account
-        const updatedSender = await tx.user.update({
-          where: { username: senderusername },
-          data: { Money: { decrement: amount } },
-        });
-  
-        console.log(`Sender's new balance: ${updatedSender.Money}`);
-  
-        // Increment amount in recipient's account
-        const recipient = await tx.user.update({
-          where: { username: recieveusernmae },
-          data: { Money: { increment: amount } },
-        });
-  
-        console.log(`Recipient's new balance: ${recipient.Money}`);
-      });
-      console.log(`Successfully transferred ${amount} from ${senderusername} to ${recieveusernmae}`);
+        console.log(`Successfully transferred ${amount} from ${senderusername} to ${recieveusernmae}`);
+
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       console.error(errorMessage);
       throw error; // Re-throw for external handling
     }
@@ -357,7 +393,7 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
       res.status(400).json({ error: 'Invalid input. Please provide valid `from`, `to`, and `amount`.' });
       return;
     }
-  
+
     try {
       await transfer(from, to, amount);
       res.status(200).json({ message: `Successfully transferred ${amount} from ${from} to ${to}.` });
@@ -365,8 +401,12 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       res.status(500).json({ error: errorMessage });
     }
-  });
+});
   
+
+
+
+
 
 
 
