@@ -115,7 +115,7 @@ const signinUser = (signinUser) => __awaiter(void 0, void 0, void 0, function* (
     return existingUser;
 });
 // Signup Route
-app.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post("/user/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password, name, email, phone } = req.body;
     try {
         const newUser = yield isValidUser({
@@ -127,6 +127,7 @@ app.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             phone,
             userid: 0
         });
+        // JWT SIGNIN
         const token = jsonwebtoken_1.default.sign({ id: newUser.id, username: newUser.username }, SECRET_KEY, { expiresIn: "1h" });
         res.cookie("token", token, { httpOnly: true });
         res.status(201).json({
@@ -149,7 +150,7 @@ app.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 }));
 // Signin Route
-app.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post("/user/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
     try {
         const existingUser = yield signinUser({ username, password });
@@ -173,7 +174,7 @@ app.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 }));
 // Get User Balance Route
-app.get("/signin/balance", authMiddleware_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get("/user/signin/balance", authMiddleware_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userid = req.user;
     try {
         const user = yield prisma.user.findUnique({ where: { id: userid.id } });
@@ -189,7 +190,7 @@ app.get("/signin/balance", authMiddleware_1.authenticateToken, (req, res) => __a
         });
     }
 }));
-app.post('/signin/update', authMiddleware_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/user/signin/update', authMiddleware_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, newUsername } = req.body;
     // Check if required fields are provided
     if (!username || !newUsername) {
@@ -230,7 +231,7 @@ app.post('/signin/update', authMiddleware_1.authenticateToken, (req, res) => __a
         });
     }
 }));
-app.get("/signin/account", authMiddleware_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get("/user/signin/account", authMiddleware_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     if (!user) {
         res.status(400).json({ message: "User information not found in request." });
@@ -289,10 +290,9 @@ function transferFunds(senderUsername, recipientUsername, amount) {
         }));
     });
 }
-app.post('/signin/transfer', authMiddleware_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+app.post('/user/signin/transfer', authMiddleware_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { recipientusername, amount } = req.body;
-    const senderusername = (_a = req.user) === null || _a === void 0 ? void 0 : _a.username; // Ensure this is safely accessed using optional chaining `?`
+    const senderusername = req.user; // Ensure this is safely accessed using optional chaining `?`
     if (!senderusername) {
         res.status(400).json({ message: "Sender is not authenticated" });
         return;
@@ -306,9 +306,111 @@ app.post('/signin/transfer', authMiddleware_1.authenticateToken, (req, res) => _
         });
     }
     catch (error) {
+        console.log(error);
         res.status(400).json({
             message: "Transaction failed"
         });
+    }
+}));
+app.post('/user/signin/AddMoney', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const username = req.body;
+    const Balance = Math.random() * 10000000;
+    try {
+        const userAddMoney = yield prisma.user.findFirst({
+            where: {
+                username: username
+            }
+        });
+        if (userAddMoney) {
+            userAddMoney.Money += Balance;
+            res.json({
+                message: `Money added ${Balance}`
+            });
+            return;
+        }
+        else {
+            res.json({
+                message: "An Error Occured"
+            });
+        }
+    }
+    catch (error) {
+        console.log(error);
+    }
+}));
+const isValidAdmin = (adminuser) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, password, name, email, phone } = adminuser;
+    try {
+        const admin = yield prisma.admin.findFirst({
+            where: {
+                OR: [
+                    { email },
+                    { phone },
+                    { email }
+                ]
+            }
+        });
+        if (admin) {
+            if (admin.username == username) {
+                throw new Error("Usernmae already taken");
+            }
+            else if (admin.email == email) {
+                throw new Error("Email already taken");
+            }
+            else if (admin.phone == phone) {
+                throw new Error("Phone number already taken");
+            }
+        }
+        const adminid = Math.random() * 1000389475;
+        const hashPasswordAdmin = bcryptjs_1.default.hashSync(password, 12);
+        const Newadmin = yield prisma.admin.create({
+            data: {
+                username,
+                password: hashPasswordAdmin,
+                name,
+                email,
+                phone,
+                adminId: adminid
+            }
+        });
+        return Newadmin;
+    }
+    catch (error) {
+        console.log(error);
+    }
+});
+app.post('/admin/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, password, name, email, phone } = req.body;
+    try {
+        const newadminuser = yield isValidAdmin({
+            username,
+            password,
+            name,
+            email,
+            phone,
+        });
+        // JWT SIGNIN
+        if (!newadminuser) {
+            throw new Error("Failed to create new admin user");
+        }
+        const token = jsonwebtoken_1.default.sign({ id: newadminuser.id, username: newadminuser.username }, SECRET_KEY, { expiresIn: "1h" });
+        res.cookie("token", token, { httpOnly: true });
+        res.status(201).json({
+            message: "User created successfully",
+            user: {
+                id: newadminuser.id,
+                username: newadminuser.username,
+                name: newadminuser.name,
+                email: newadminuser.email,
+                phone: newadminuser.phone,
+                createAt: newadminuser.createdAt,
+                adminid: newadminuser.adminId
+            },
+        });
+    }
+    catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+        res.status(500).json({ message: errorMessage });
     }
 }));
 // Start Server

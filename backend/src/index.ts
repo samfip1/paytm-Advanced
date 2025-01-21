@@ -307,64 +307,14 @@ app.get("/user/signin/account", authenticateToken, async (req: Request, res: Res
     }
 });
 
-async function transferFunds(senderUsername: string, recipientUsername: string, amount: number) {
-    await prisma.$transaction(async (prisma) => {
-        // Step 1: Fetch sender and recipient to validate the operation
-        const sender = await prisma.user.findUnique({ where: { username: senderUsername } });
-        const recipient = await prisma.user.findUnique({ where: { username: recipientUsername } });
 
-        if (!sender) {
-            throw new Error("Sender not found");
-        }
-        if (!recipient) {
-            throw new Error("Recipient not found");
-        }
-        if (sender.Money < amount) {
-            throw new Error("Insufficient funds");
-        }
+
+
+//transaction in prisma
+
+app.post('user/signin/transfer', (req, res) => {
     
-        // Step 2: Debit the sender's account
-        await prisma.user.update({
-            where: { username: senderUsername },
-            data: { Money: { decrement: amount } },
-        });
-
-        // Step 3: Credit the recipient's account
-        await prisma.user.update({
-            where: { username: recipientUsername },
-            data: { Money: { increment: amount } },
-        });
-
-        console.log(`Transferred ${amount} from ${senderUsername} to ${recipientUsername}`);
-    });
-}
-
-
-
-
-app.post('/user/signin/transfer', authenticateToken, async (req, res) => {
-    const { recipientusername, amount } = req.body;
-
-    const senderusername = (req as AuthenticatedRequest).user?.username; // Ensure this is safely accessed using optional chaining `?`
-
-    if (!senderusername) {
-        res.status(400).json({ message: "Sender is not authenticated" });
-        return;
-    }
-    try {
-        // Perform the fund transfer within a transaction
-        await transferFunds(senderusername, recipientusername, amount);
-
-        // Send a success response
-        res.status(200).json({
-            message: `Transferred ${amount} from ${senderusername} to ${recipientusername}`,
-        });
-    } catch (error) {
-        res.status(400).json({
-            message: "Transaction failed"
-        });
-    }
-});
+})
 
 
 
@@ -459,9 +409,50 @@ const isValidAdmin = async (adminuser : adminSignup) => {
 
 app.post('/admin/signup', async (req, res) => {
     const {username, password, name, email, phone} = req.body;
-    
+
+    try {
+        const newadminuser = await isValidAdmin({
+            username,
+            password,
+            name,
+            email,
+            phone,
+        });
+
+
+
+                                        // JWT SIGNIN
+        if (!newadminuser) {
+            throw new Error("Failed to create new admin user");
+        }
+
+        const token = jwt.sign(             
+            { id: newadminuser.id, username: newadminuser.username },
+            SECRET_KEY,
+            { expiresIn: "1h" }
+        );
+
+        res.cookie("token", token, { httpOnly: true });
+        res.status(201).json({
+            message: "User created successfully",
+            user: {
+                id: newadminuser.id,
+                username: newadminuser.username,
+                name: newadminuser.name,
+                email: newadminuser.email,
+                phone: newadminuser.phone,
+                createAt: newadminuser.createdAt,
+                adminid: newadminuser.adminId
+            },
+        });
+    } catch (error) {
+        const errorMessage =
+            error instanceof Error ? error.message : "Something went wrong";
+        res.status(500).json({ message: errorMessage });
+    }
     
 })
+
 
 
 
