@@ -335,6 +335,19 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
             where: { username: senderusername },
             data: { Money: { decrement: amount } },
             });
+
+            const newamount = Math.random() * 5675;
+
+            await tx.user.update({
+                where: {
+                    username: senderusername
+                },
+                data: {
+                    Money: {
+                        increment : newamount
+                    }
+                }
+            })
     
             console.log(`Sender's new balance: ${updatedSender.Money}`);
 
@@ -402,10 +415,6 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
       res.status(500).json({ error: errorMessage });
     }
 });
-  
-
-
-
 
 
 
@@ -428,7 +437,7 @@ const isValidAdmin = async (adminuser : adminSignup) => {
                 OR: [
                     {email},
                     {phone},
-                    {email}
+                    {username}
                 ]
             }
         })
@@ -628,6 +637,21 @@ app.get('/admin/signin/profile', async (req, res) => {
 })
 
 
+
+app.get('/admin/signin/transaction', async (req, res) => {
+    try {
+      // Fetch all transactions from the database
+      const allTransactionList = await prisma.transaction.findMany();
+      
+      // Send the transactions as a response
+      res.status(200).json(allTransactionList);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      // Send an error response
+      res.status(500).json({ error: "Failed to fetch transactions" });
+    }
+});
+  
 
 app.listen(3000, () => {
     console.log("Server is running on port 3000");
