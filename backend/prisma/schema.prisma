@@ -31,3 +31,15 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+
+
+model Transaction {
+  id            Int      @unique     @default(autoincrement())
+  senderId      Int  
+  receiverId    Int 
+  senderUsername String 
+  receiverUsername String
+  amount Int
+  TransactionAt   DateTime  @default(now())
+}

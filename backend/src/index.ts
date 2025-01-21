@@ -371,38 +371,6 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
 
 
 
-app.post('/user/signin/AddMoney', async (req, res) => {
-    const username : string = (req as AuthenticatedRequest).body;
-
-    const Balance : number = Math.random() *10000000;
-    try {
-        const userAddMoney = await prisma.user.findFirst({
-            where: {
-                username: username
-            }
-        })
-
-        if(userAddMoney) {
-            userAddMoney.Money += Balance;
-            res.json({
-                message : `Money added ${Balance}`
-            })
-            return;
-        }
-
-        else {
-            res.json({
-                message: "An Error Occured"
-            })
-        }
-
-    } catch (error) {
-        console.log(error);
-    }
-})
-
-
-
 interface adminSignup {
     username :string;
     password : string;
@@ -410,7 +378,6 @@ interface adminSignup {
     email : string
     phone: number
 }
-
 
 const isValidAdmin = async (adminuser : adminSignup) => {
     const {username, password, name, email, phone} = adminuser;
@@ -619,6 +586,7 @@ app.get('/admin/signin/profile', async (req, res) => {
     
     
 })
+
 
 
 app.listen(3000, () => {
