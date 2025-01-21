@@ -261,55 +261,58 @@ app.get("/user/signin/account", authMiddleware_1.authenticateToken, (req, res) =
         res.status(500).json({ message: "Internal Server Error" });
     }
 }));
-function transferFunds(senderUsername, recipientUsername, amount) {
+function transfer(senderusername, recieveusernmae, amount) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield prisma.$transaction((prisma) => __awaiter(this, void 0, void 0, function* () {
-            // Step 1: Fetch sender and recipient to validate the operation
-            const sender = yield prisma.user.findUnique({ where: { username: senderUsername } });
-            const recipient = yield prisma.user.findUnique({ where: { username: recipientUsername } });
-            if (!sender) {
-                throw new Error("Sender not found");
-            }
-            if (!recipient) {
-                throw new Error("Recipient not found");
-            }
-            if (sender.Money < amount) {
-                throw new Error("Insufficient funds");
-            }
-            // Step 2: Debit the sender's account
-            yield prisma.user.update({
-                where: { username: senderUsername },
-                data: { Money: { decrement: amount } },
-            });
-            // Step 3: Credit the recipient's account
-            yield prisma.user.update({
-                where: { username: recipientUsername },
-                data: { Money: { increment: amount } },
-            });
-            console.log(`Transferred ${amount} from ${senderUsername} to ${recipientUsername}`);
-        }));
+        try {
+            yield prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                // Fetch sender's account balance before updating
+                const sender = yield tx.user.findUnique({
+                    where: { username: senderusername },
+                    select: { Money: true },
+                });
+                if (!sender) {
+                    throw new Error(`Sender with email ${senderusername} does not exist.`);
+                }
+                // Check if sender has enough balance
+                if (sender.Money < amount) {
+                    throw new Error(`${senderusername} doesn't have enough balance to send ${amount}`);
+                }
+                // Decrement amount from sender's account
+                const updatedSender = yield tx.user.update({
+                    where: { username: senderusername },
+                    data: { Money: { decrement: amount } },
+                });
+                console.log(`Sender's new balance: ${updatedSender.Money}`);
+                // Increment amount in recipient's account
+                const recipient = yield tx.user.update({
+                    where: { username: recieveusernmae },
+                    data: { Money: { increment: amount } },
+                });
+                console.log(`Recipient's new balance: ${recipient.Money}`);
+            }));
+            console.log(`Successfully transferred ${amount} from ${senderusername} to ${recieveusernmae}`);
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            console.error(errorMessage);
+            throw error; // Re-throw for external handling
+        }
     });
 }
-app.post('/user/signin/transfer', authMiddleware_1.authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { recipientusername, amount } = req.body;
-    const senderusername = req.user; // Ensure this is safely accessed using optional chaining `?`
-    if (!senderusername) {
-        res.status(400).json({ message: "Sender is not authenticated" });
+app.post('/user/signin/transfer', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { from, to, amount } = req.body;
+    // Validate input
+    if (!from || !to || typeof amount !== 'number' || amount <= 0) {
+        res.status(400).json({ error: 'Invalid input. Please provide valid `from`, `to`, and `amount`.' });
         return;
     }
     try {
-        // Perform the fund transfer within a transaction
-        yield transferFunds(senderusername, recipientusername, amount);
-        // Send a success response
-        res.status(200).json({
-            message: `Transferred ${amount} from ${senderusername} to ${recipientusername}`,
-        });
+        yield transfer(from, to, amount);
+        res.status(200).json({ message: `Successfully transferred ${amount} from ${from} to ${to}.` });
     }
     catch (error) {
-        console.log(error);
-        res.status(400).json({
-            message: "Transaction failed"
-        });
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        res.status(500).json({ error: errorMessage });
     }
 }));
 app.post('/user/signin/AddMoney', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -411,6 +414,28 @@ app.post('/admin/signup', (req, res) => __awaiter(void 0, void 0, void 0, functi
     catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Something went wrong";
         res.status(500).json({ message: errorMessage });
+    }
+}));
+function signinadmin(admin) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { username, password } = admin;
+        const adminLoger = yield prisma.admin.findFirst({
+            where: {
+                username: username
+            }
+        });
+        if (!adminLoger || bcryptjs_1.default.compareSync(adminLoger.password, password)) {
+            throw new Error("Invalid Credentials ");
+        }
+    });
+}
+app.post('/admin/signin', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const ADuser = yield signinadmin(req.body);
+        console.log(req.body);
+        console.log(ADuser);
+    }
+    catch (error) {
     }
 }));
 // Start Server

@@ -12,6 +12,7 @@ const prisma = new PrismaClient();
 const app = express();
 const SECRET_KEY = endpointsConfig.SK;
 import { Request, Response } from "express";
+const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 interface AuthenticatedRequest extends Request {
     user: {
         id: number;
@@ -113,7 +114,6 @@ const signinUser = async (signinUser: signinUser) => {
 
 
 
-
 // Signup Route
 app.post("/user/signup", async (req, res) => {
     const { username, password, name, email , phone} = req.body;
@@ -153,8 +153,7 @@ app.post("/user/signup", async (req, res) => {
             },
         });
     } catch (error) {
-        const errorMessage =
-            error instanceof Error ? error.message : "Something went wrong";
+        const errorMessage = error instanceof Error ? error.message : "Something went wrong";
         res.status(500).json({ message: errorMessage });
     }
 });
@@ -173,7 +172,6 @@ app.post("/user/signin", async (req, res) => {
             SECRET_KEY,
             { expiresIn: "1h" }
         );
-
         res.cookie("token", token, { httpOnly: true });
         res.status(200).json({
             message: "Successfully logged in",
@@ -309,12 +307,67 @@ app.get("/user/signin/account", authenticateToken, async (req: Request, res: Res
 
 
 
+async function transfer(senderusername: string, recieveusernmae: string, amount: number): Promise<void> {
+    try {
+      await prisma.$transaction(async (tx) => {
+        // Fetch sender's account balance before updating
+        const sender = await tx.user.findUnique({
+          where: { username: senderusername },
+          select: { Money: true },
+        });
+  
+        if (!sender) {
+          throw new Error(`Sender with email ${senderusername} does not exist.`);
+        }
+  
+        // Check if sender has enough balance
+        if (sender.Money < amount) {
+          throw new Error(`${senderusername} doesn't have enough balance to send ${amount}`);
+        }
+  
+        // Decrement amount from sender's account
+        const updatedSender = await tx.user.update({
+          where: { username: senderusername },
+          data: { Money: { decrement: amount } },
+        });
+  
+        console.log(`Sender's new balance: ${updatedSender.Money}`);
+  
+        // Increment amount in recipient's account
+        const recipient = await tx.user.update({
+          where: { username: recieveusernmae },
+          data: { Money: { increment: amount } },
+        });
+  
+        console.log(`Recipient's new balance: ${recipient.Money}`);
+      });
+      console.log(`Successfully transferred ${amount} from ${senderusername} to ${recieveusernmae}`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      console.error(errorMessage);
+      throw error; // Re-throw for external handling
+    }
+  }
+  
+  app.post('/user/signin/transfer', async (req, res) => {
+    const { from, to, amount } = req.body;
+  
+    // Validate input
+    if (!from || !to || typeof amount !== 'number' || amount <= 0) {
+      res.status(400).json({ error: 'Invalid input. Please provide valid `from`, `to`, and `amount`.' });
+      return;
+    }
+  
+    try {
+      await transfer(from, to, amount);
+      res.status(200).json({ message: `Successfully transferred ${amount} from ${from} to ${to}.` });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      res.status(500).json({ error: errorMessage });
+    }
+  });
+  
 
-//transaction in prisma
-
-app.post('user/signin/transfer', (req, res) => {
-    
-})
 
 
 
@@ -453,6 +506,45 @@ app.post('/admin/signup', async (req, res) => {
     
 })
 
+
+interface AdminLogin {
+    username: string;
+    password: string;
+}
+
+async function signinAdmin(admin: AdminLogin) {
+    const { username, password } = admin;
+
+    const adminLogger = await prisma.admin.findFirst({
+        where: {
+            username: username
+        }
+    });
+
+    if (!adminLogger || !bcrypt.compareSync(password, adminLogger.password)) {
+        throw new Error("Invalid Credentials");
+    }
+    return adminLogger; 
+}
+
+app.post('/admin/signin', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const loggedInAdmin = await signinAdmin({ username, password });
+
+        const token = jwt.sign(
+            { id: loggedInAdmin.id, username: loggedInAdmin.username },
+            SECRET_KET_ADMIN, 
+            { expiresIn: "1h" } // Set token expiration time
+        );
+
+        res.status(200).json({ token });
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : ":Error Occured"
+        res.status(401).json({ message: errorMessage });
+    }
+});
 
 
 
