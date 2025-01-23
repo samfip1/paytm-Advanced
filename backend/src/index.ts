@@ -26,7 +26,6 @@ app.use(cookieParser());
 
 
 
-
 interface User {
     username: string;
     password: string;
@@ -163,7 +162,6 @@ app.post("/user/signup", async (req, res) => {
 // Signin Route
 app.post("/user/signin", async (req, res) => {
     const { username, password } = req.body;
-
     try {
         const existingUser = await signinUser({ username, password });
 
@@ -351,17 +349,9 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
     
             console.log(`Sender's new balance: ${updatedSender.Money}`);
 
-            const reciver = await tx.user.findUnique({
-                where: { username: senderusername },
-                select: {
-                    Money: true,
-                    userid : true
-                },
-            });
+            const transactionid = Math.random() * 989247568973999
 
 
-            
-    
             // Increment amount in recipient's account
             const recipient = await tx.user.update({
             where: { 
@@ -382,7 +372,8 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
                     receiverId: recieverID,
                     senderUsername: senderusername,
                     receiverUsername: recieveusernmae,
-                    amount: amount
+                    amount: amount,
+                    
                 }
             })
             console.log(payment);

@@ -45,4 +45,5 @@ model Transaction {
   receiverUsername String
   amount Int
   TransactionAt   DateTime  @default(now())
+  transactionid   Int   @default(0)   @unique
 }
