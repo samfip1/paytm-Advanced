@@ -474,7 +474,7 @@ async function betgames(money: Money) {
     return price_money;
 }
 
-app.post('/user/signin/mini_games', async (req, res) => {
+app.post('/user/signin/mini_games', authenticateToken, async (req, res) => {
     try {
         const { bet_number_choice, input_number } = req.body;
 
