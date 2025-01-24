@@ -558,6 +558,14 @@ app.post('/admin/signin', async (req, res) => {
             SECRET_KET_ADMIN
         );
 
+        await prisma.admin.update({
+            where: {
+                username: username
+            },
+            data: {
+                totalsignin: loggedInAdmin.totalsignin + 1
+            }
+        })
         res.cookie("token", token, { httpOnly: true });
         res.status(200).json({
             message: "Successfully logged in",

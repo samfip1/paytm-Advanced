@@ -42,6 +42,7 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   totalsignin   Int     @default(0)
+  
 }
 
 
