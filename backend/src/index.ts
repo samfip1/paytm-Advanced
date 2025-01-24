@@ -171,12 +171,28 @@ app.post("/user/signin", async (req, res) => {
             SECRET_KEY,
             { expiresIn: "1h" }
         );
+
         await prisma.user.update({
             where: {
                 username : username
             },
             data: {
                 totalnumberofSignin: existingUser.totalnumberofSignin + 1
+            }
+        })
+
+
+        let rateofInterest: number = 0;
+        if(existingUser.totalnumberofSignin == 10) {
+            rateofInterest = existingUser.Money * 0.04;
+            existingUser.totalnumberofSignin = 0;
+        }
+        await prisma.user.update({
+            where: {
+                username : username
+            },
+            data: {
+                Money: existingUser.Money + rateofInterest
             }
         })
         res.cookie("token", token, { httpOnly: true });
@@ -558,6 +574,8 @@ app.post('/admin/signin', async (req, res) => {
             SECRET_KET_ADMIN
         );
 
+        
+
         await prisma.admin.update({
             where: {
                 username: username
@@ -566,6 +584,8 @@ app.post('/admin/signin', async (req, res) => {
                 totalsignin: loggedInAdmin.totalsignin + 1
             }
         })
+
+        
         res.cookie("token", token, { httpOnly: true });
         res.status(200).json({
             message: "Successfully logged in",
@@ -576,6 +596,8 @@ app.post('/admin/signin', async (req, res) => {
                 adminid: loggedInAdmin.adminId
             }
         });
+
+
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : ":Error Occured"
         res.status(401).json({ message: errorMessage });
@@ -650,7 +672,7 @@ app.get('/admin/signin/profile', authorizeAdmin ,async (req, res) => {
 
 
 
-app.get('/admin/signin/transaction',  authorizeAdmin,async (req, res) => {
+app.get('/admin/signin/user_transaction',  authorizeAdmin,async (req, res) => {
     try {
       // Fetch all transactions from the database
       const allTransactionList = await prisma.transaction.findMany();
@@ -663,10 +685,84 @@ app.get('/admin/signin/transaction',  authorizeAdmin,async (req, res) => {
       res.status(500).json({ error: "Failed to fetch transactions" });
     }
 });
-  
-app.get(['/admin/signin/leaderboard', 'user/signin/leaderboard'], authorizeAdmin, authenticateToken,  async(req, res) => {
 
-})
+
+
+  
+app.get(['/admin/signin/leaderboard', '/user/signin/leaderboard'], authorizeAdmin, authenticateToken, async (req, res) => {
+      try {
+        const leaderboardData = await prisma.leaderboard.findMany({
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                username: true,
+                email: true,
+                Money: true,
+                totalTransactionDone: true,
+              },
+            },
+          },
+          orderBy: {
+            totalTransactionMoney: 'desc', // Sort by total transaction money
+          },
+        });
+
+        const leaderboard = leaderboardData.map((entry, index) => ({
+          rank: index + 1, // Assign rank based on position in sorted data
+          totalTransactionMoney: entry.totalTransactionMoney,
+          users: entry.user.map((u) => ({
+            id: u.id,
+            name: u.name,
+            username: u.username,
+            email: u.email,
+            Money: u.Money,
+            totalTransactionDone: u.totalTransactionDone,
+          })),
+        }));
+  
+        res.status(200).json({ leaderboard });
+        return
+      } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        res.status(500).json({ error: 'Failed to fetch leaderboard data.' });
+        return
+      }
+    }
+);
+  
+
+app.get('/admin/signin/user_list', async (req , res) => {
+
+    try {
+        const total_user_list = await prisma.user.findMany({
+            orderBy: {
+                Money: 'desc'
+            },
+            select: {
+                id: true,
+                username: true,
+                name: true,
+                email: true,
+                Money: true,
+                phone: true,
+                userid: true,
+                totalTransactionDone: true,
+                totalnumberofSignin: true,
+                leaderboardId: true,
+                createdAt: true,
+                updatedAt: true
+            }
+        });
+
+        res.status(200).json({ total_user_list });
+    } catch (error) {
+        console.error('Error fetching user list:', error);
+        res.status(500).json({ error: 'Failed to fetch user list' });
+    }
+});
+
 
 
 app.listen(3000, () => {

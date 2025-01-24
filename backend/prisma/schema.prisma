@@ -22,6 +22,7 @@ model User {
   totalnumberofSignin   Int     @default(0)
   leaderboardId Int?
   leaderboard leaderboard? @relation(fields: [leaderboardId], references: [id])
+  
 }
 
 model leaderboard {
@@ -42,7 +43,6 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   totalsignin   Int     @default(0)
-  
 }
 
 
