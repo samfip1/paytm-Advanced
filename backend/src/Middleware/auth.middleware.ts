@@ -11,6 +11,7 @@ interface AuthenticatedRequest extends Request {
     user?: {
         id: number;
         username: string;
+        role?: string;
     };
 }
 
@@ -25,12 +26,13 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
 
     try {
         // Verify the token
-        const decoded = jwt.verify(token, SECRET_KEY) as { id: number; username: string };
+        const decoded = jwt.verify(token, SECRET_KEY) as { id: number; username: string; role: string };
 
         // Attach the decoded user data to the request object
         req.user = {
             id: decoded.id,
             username: decoded.username,
+            role: decoded.role, // Include role if present
         };
 
         next(); // Proceed to the next middleware/route handler

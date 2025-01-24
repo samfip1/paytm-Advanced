@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { authenticateToken } from "./Middleware/authMiddleware";
+import { authenticateToken } from "./Middleware/auth.middleware";
 import * as dotenv from 'dotenv';
 dotenv.config();
 import endpointsConfig from "./Middleware/endpoints.config";
@@ -13,6 +13,7 @@ const app = express();
 const SECRET_KEY = endpointsConfig.SK;
 import { Request, Response } from "express";
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
+import { authorizeAdmin } from "./Middleware/admin.middleware";
 interface AuthenticatedRequest extends Request {
     user: {
         id: number;
@@ -170,6 +171,14 @@ app.post("/user/signin", async (req, res) => {
             SECRET_KEY,
             { expiresIn: "1h" }
         );
+        await prisma.user.update({
+            where: {
+                username : username
+            },
+            data: {
+                totalnumberofSignin: existingUser.totalnumberofSignin + 1
+            }
+        })
         res.cookie("token", token, { httpOnly: true });
         res.status(200).json({
             message: "Successfully logged in",
@@ -313,7 +322,8 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
             where: { username: senderusername },
             select: {
                 Money: true,
-                userid : true
+                userid : true,
+                totalTransactionDone: true
                 },
             });
 
@@ -331,7 +341,10 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
             // Decrement amount from sender's account
             const updatedSender = await tx.user.update({
             where: { username: senderusername },
-            data: { Money: { decrement: amount } },
+            data: {
+                Money: { decrement: amount },
+                totalTransactionDone: sender.totalTransactionDone + 1
+            },
             });
 
             const newamount = Math.random() * 5675;
@@ -373,7 +386,7 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
                     senderUsername: senderusername,
                     receiverUsername: recieveusernmae,
                     amount: amount,
-                    
+                    trasanctionId: transactionid
                 }
             })
             console.log(payment);
@@ -389,7 +402,7 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
     }
   }
   
-  app.post('/user/signin/transfer', async (req, res) => {
+  app.post('/user/signin/transfer', authenticateToken ,async (req, res) => {
     const { from, to, amount } = req.body;
   
     // Validate input
@@ -563,7 +576,7 @@ app.post('/admin/signin', async (req, res) => {
 
 
 
-app.put('/admin/signin/update', async (req, res) => {
+app.put('/admin/signin/update', authorizeAdmin,async (req, res) => {
     const {username, newUsername} = req.body;
 
     const adminUpdate = await prisma.admin.findFirst({
@@ -599,7 +612,7 @@ app.put('/admin/signin/update', async (req, res) => {
 
 
 
-app.get('/admin/signin/profile', async (req, res) => {
+app.get('/admin/signin/profile', authorizeAdmin ,async (req, res) => {
 
     const {username} = req.body;
 
@@ -629,7 +642,7 @@ app.get('/admin/signin/profile', async (req, res) => {
 
 
 
-app.get('/admin/signin/transaction', async (req, res) => {
+app.get('/admin/signin/transaction',  authorizeAdmin,async (req, res) => {
     try {
       // Fetch all transactions from the database
       const allTransactionList = await prisma.transaction.findMany();
@@ -643,6 +656,10 @@ app.get('/admin/signin/transaction', async (req, res) => {
     }
 });
   
+app.get(['/admin/signin/leaderboard', 'user/signin/leaderboard'], authorizeAdmin, authenticateToken,  async(req, res) => {
+
+})
+
 
 app.listen(3000, () => {
     console.log("Server is running on port 3000");

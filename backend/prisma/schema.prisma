@@ -20,6 +20,15 @@ model User {
   userid    Int      @default(0)
   totalTransactionDone    Int     @default(0)
   totalnumberofSignin   Int     @default(0)
+  leaderboardId Int?
+  leaderboard leaderboard? @relation(fields: [leaderboardId], references: [id])
+}
+
+model leaderboard {
+  id   Int    @id @default(autoincrement())
+  rank Int?
+  user User[]
+  totalTransactionMoney   Int
 }
 
 model Admin {
@@ -39,6 +48,7 @@ model Admin {
 
 model Transaction {
   id            Int      @unique     @default(autoincrement())
+  trasanctionId   Int
   senderId      Int  
   receiverId    Int 
   senderUsername String 
@@ -47,3 +57,5 @@ model Transaction {
   TransactionAt   DateTime  @default(now())
   transactionid   Int   @default(0)   @unique
 }
+
+
