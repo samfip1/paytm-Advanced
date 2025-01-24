@@ -416,9 +416,9 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
       console.error(errorMessage);
       throw error; // Re-throw for external handling
     }
-  }
+}
   
-  app.post('/user/signin/transfer', authenticateToken ,async (req, res) => {
+app.post('/user/signin/transfer', authenticateToken ,async (req, res) => {
     const { from, to, amount } = req.body;
   
     // Validate input
@@ -435,6 +435,69 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
       res.status(500).json({ error: errorMessage });
     }
 });
+
+interface Money {
+    bet_number_choice: number;
+    input_number: number;
+}
+
+async function betgames(money: Money) {
+    // Input validation
+    if (money.bet_number_choice < 0 || money.input_number < 0) {
+        throw new Error("Invalid input: Values must be non-negative numbers.");
+    }
+
+    const integer_number = money.bet_number_choice;
+    const upper_limit = Math.min(integer_number % 10, 10); // Limit range to prevent large calculations
+
+    let price_money = 0;
+
+    try {
+        const bet_number = Math.floor(Math.random() * Math.pow(10, upper_limit));
+
+        if (bet_number === money.input_number) {
+            if (bet_number < 2) {
+                price_money = money.input_number + 3 * money.input_number;
+            } else if (bet_number < 4) {
+                price_money = money.input_number + 8 * money.input_number;
+            } else if (bet_number < 6) {
+                price_money = money.input_number + 20 * money.input_number;
+            } else {
+                price_money = money.input_number + 50 * money.input_number;
+            }
+        }
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message: "An unknown error occurred";
+        throw new Error(`Error during game execution: ${errorMessage}`);
+    }
+
+    return price_money;
+}
+
+app.post('/user/signin/mini_games', async (req, res) => {
+    try {
+        const { bet_number_choice, input_number } = req.body;
+
+        if (bet_number_choice === undefined || input_number === undefined) {
+            res.status(400).json({ error: "Invalid request body." });
+            return
+        }
+
+        const money: Money = { bet_number_choice, input_number };
+        const result = await betgames(money);
+
+        res.status(200).json({ success: true, prize: result });
+        return
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message: "An unknown error occurred";
+        res.status(500).json({ success: false, error: errorMessage });
+        return
+    }
+});
+
+
+
+
 
 
 
