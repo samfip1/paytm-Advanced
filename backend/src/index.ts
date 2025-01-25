@@ -15,7 +15,7 @@ import { Request, Response } from "express";
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "./Middleware/admin.middleware";
 
-const cron = require('node-cron');
+import cron from 'node-cron';
 
 interface AuthenticatedRequest extends Request {
     user: {
@@ -516,7 +516,7 @@ app.post('/user/signin/mini_games', authenticateToken, async (req, res) => {
 });
 
 
-const { v4: uuidv4 } = require('uuid'); // UUID for unique loan ID
+import { v4 as uuidv4 } from 'uuid'; // UUID for unique loan ID
 
 app.post('/user/signin/apply_for_loan', authenticateToken, async (req, res) => {
     const { username, loan_Money, time } = req.body;

@@ -29,7 +29,7 @@ model User {
 
 model Loan {
   id             Int      @id @default(autoincrement())
-  loanId         Int      @unique
+  loanId         Decimal      @unique
   loanMoney      Decimal
   time           Int
   interest       Decimal
