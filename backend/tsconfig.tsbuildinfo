@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/middleware/authmiddleware.ts","./src/middleware/endpoints.config.ts"],"version":"5.7.2"}
+{"root":["./src/index.ts","./src/middleware/admin.middleware.ts","./src/middleware/auth.middleware.ts","./src/middleware/endpoints.config.ts"],"version":"5.7.2"}

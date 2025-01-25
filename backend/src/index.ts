@@ -354,7 +354,6 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
                 },
             });
 
-            
             if (!sender) {
                 throw new Error(`Sender with username ${senderusername} does not exist.`);
             }
@@ -364,9 +363,20 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
             const senderId = sender.userid;
     
             // Check if sender has enough balance
-            if (sender.Money < amount) {
+            if (sender.Money < amount + 18) {
             throw new Error(`${senderusername} doesn't have enough balance to send ${amount}`);
             }
+            if (sender.Money < amount + 18) {
+                amount = amount + 18
+            }
+
+            if(sender.Money > 10000000 + 180) {
+                amount = amount + 180           
+            }
+            if(sender.Money < 0) {
+                throw new Error(`${senderusername} doesn't have enough Money to pay Platform fee`);
+            }
+
 
     
             // Decrement amount from sender's account
