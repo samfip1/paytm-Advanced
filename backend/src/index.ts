@@ -35,6 +35,7 @@ interface User {
     Money: number;
     phone: number;
     userid: number;
+    transaction_Pin : number;
 }
 
 interface signinUser {
@@ -47,7 +48,7 @@ interface signinUser {
 
 // Function to check if the user is valid and create a new user
 const isValidUser = async (user: User) => {
-    const { username, password, name, email, phone } = user;
+    const { username, password, name, email, phone , transaction_Pin} = user;
 
     // Check for duplicate email, username, or phone
     const existingUser = await prisma.user.findFirst({
@@ -72,7 +73,6 @@ const isValidUser = async (user: User) => {
             throw new Error("A user with this phone number already exists.");
         }
     }
-
     // Generate a unique user ID and hashed password
     const userId = Math.floor(Math.random() * 10000000);
     const hashedPassword = bcrypt.hashSync(password, 12);
@@ -80,6 +80,11 @@ const isValidUser = async (user: User) => {
     // Generate a random money value
     const randomMoney = Math.floor(Math.random() * (1000000000 - 10000000 + 1)) + 10000000;
 
+    await prisma.transactionpin.create({
+        data: {
+            transaction_pin: transaction_Pin
+        }
+    })
     // Create a new user in the database
     const newUser = await prisma.user.create({
         data: {
@@ -89,7 +94,7 @@ const isValidUser = async (user: User) => {
             email,
             Money: randomMoney,
             phone,
-            userid: userId,
+            userid: userId
         },
     });
 
@@ -113,10 +118,9 @@ const signinUser = async (signinUser: signinUser) => {
 };
 
 
-
 // Signup Route
 app.post("/user/signup", async (req, res) => {
-    const { username, password, name, email , phone} = req.body;
+    const { username, password, name, email , phone, transaction_Pin} = req.body;
 
     try {
         const newUser = await isValidUser({
@@ -126,7 +130,8 @@ app.post("/user/signup", async (req, res) => {
             email,
             Money: 0,
             phone,
-            userid:0
+            userid:0,
+            transaction_Pin: transaction_Pin
         });
 
 
@@ -330,21 +335,28 @@ app.get("/user/signin/account", authenticateToken, async (req: Request, res: Res
 
 
 
-async function transfer(senderusername: string, recieveusernmae: string, amount: number): Promise<void> {
+async function transfer(senderusername: string, recieveusernmae: string, amount: number, transaction_Pin: number): Promise<void> {
     try {
         await prisma.$transaction(async (tx) => {
             // Fetch sender's account balance before updating
+
+
             const sender = await tx.user.findUnique({
             where: { username: senderusername },
             select: {
                 Money: true,
                 userid : true,
-                totalTransactionDone: true
+                totalTransactionDone: true,
+                transaction_Pass: true
                 },
             });
 
+            
             if (!sender) {
                 throw new Error(`Sender with username ${senderusername} does not exist.`);
+            }
+            if (!sender.transaction_Pass.some(tp => tp.transaction_pin === transaction_Pin)) {
+                throw new Error('Your Transaction pin is Incorrect');
             }
             const senderId = sender.userid;
     
@@ -419,7 +431,7 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
 }
   
 app.post('/user/signin/transfer', authenticateToken ,async (req, res) => {
-    const { from, to, amount } = req.body;
+    const { from, to, amount, transaction_pin } = req.body;
   
     // Validate input
     if (!from || !to || typeof amount !== 'number' || amount <= 0) {
@@ -427,8 +439,10 @@ app.post('/user/signin/transfer', authenticateToken ,async (req, res) => {
       return;
     }
 
+    
+
     try {
-      await transfer(from, to, amount);
+      await transfer(from, to, amount, transaction_pin);
       res.status(200).json({ message: `Successfully transferred ${amount} from ${from} to ${to}.` });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";

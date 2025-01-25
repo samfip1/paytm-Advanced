@@ -17,13 +17,21 @@ model User {
   createdAt DateTime @default(now())
   phone     Int      @unique
   updatedAt DateTime @updatedAt
-  userid    Int      @default(0)
+  userid    Int      @default(0)      @unique
   totalTransactionDone    Int     @default(0)
   totalnumberofSignin   Int     @default(0)
   leaderboardId Int?
   leaderboard leaderboard? @relation(fields: [leaderboardId], references: [id])
-  
+  transaction_Pass Transactionpin[]  
 }
+
+model Transactionpin {
+  id      Int     @unique   @default(autoincrement())
+  user  User  @relation(fields: [transaction_pin], references: [userid])
+  transaction_pin Int   @unique
+}
+
+
 
 model leaderboard {
   id   Int    @id @default(autoincrement())
