@@ -662,17 +662,39 @@ app.post('/user/signin/request_for_money', async (req , res) => {
             throw new Error("The Username you provided for Requesting money is not Present in our DataBase");
         }
 
-        
-
 
     } catch (error) {
         
     }
 
-    
-
 
 })
+
+
+app.post('/user/signin/Make_Donation', async (req, res ) => {
+
+    const {userid, DonatedMoney} = req.body;
+    try {
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                userid: userid
+            }, 
+            select: {
+                Money: true
+            }
+        })
+
+        
+    } catch (error) {
+        
+    }
+})
+
+
+
+
+
+
 
 
 interface adminSignup {

@@ -26,7 +26,37 @@ model User {
     loginhistory         LoginActivity[]
     loanMoney            Loan[]
     FraudUser           Fraud_People?
+    donation            Donation[]
 }
+
+
+model Donation {
+    id      Int         @default(autoincrement())
+    donationid      Int         @unique
+    senderId        Int         @unique
+    senderUsername      String
+    DonatedMoney    Int
+    AccountNo       Int     @default(1233333323454355332)  
+    donation        User        @relation(fields: [senderId], references: [userid])   
+    donatedAt       DateTime       @default(now())
+}
+
+
+model Transaction {
+    id               Int      @unique @default(autoincrement())
+    trasanctionId    Int
+    senderId         Int
+    receiverId       Int
+    senderUsername   String
+    receiverUsername String
+    amount           Int
+    TransactionAt    DateTime @default(now())
+    transactionid    Int      @unique @default(0)
+    Comment          String?
+}
+
+
+
 
 model Request {
     id          Int             @id     @default(autoincrement())
@@ -37,6 +67,9 @@ model Request {
     reason              String
     RequestCreatedAt        DateTime        @default(now())
 }
+
+
+
 
 
 model Loan {
@@ -62,7 +95,7 @@ model Transactionpin {
 
 
 
-
+// left to implement
 model LoginActivity {
     id        Int      @id @default(autoincrement())
     userId    Int
@@ -102,18 +135,6 @@ model Admin {
 
 
 
-model Transaction {
-    id               Int      @unique @default(autoincrement())
-    trasanctionId    Int
-    senderId         Int
-    receiverId       Int
-    senderUsername   String
-    receiverUsername String
-    amount           Int
-    TransactionAt    DateTime @default(now())
-    transactionid    Int      @unique @default(0)
-    Comment          String?
-}
 
 
 
