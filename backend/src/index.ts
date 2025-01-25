@@ -569,9 +569,6 @@ app.post('/user/signin/apply_for_loan', authenticateToken, async (req, res) => {
     }
 });
 
-
-
-
 cron.schedule('0 0 * * *', async () => {
     try {
         const overdueLoans = await prisma.loan.findMany({
@@ -620,8 +617,6 @@ cron.schedule('0 0 * * *', async () => {
         console.error("Error processing loan repayments:", error);
     }
 });
-
-
 
 
 
@@ -921,8 +916,7 @@ app.get(['/admin/signin/leaderboard', '/user/signin/leaderboard'], authorizeAdmi
 );
   
 
-app.get('/admin/signin/user_list', async (req , res) => {
-
+app.get('/admin/signin/user_list',authorizeAdmin ,async (req , res) => {
     try {
         const total_user_list = await prisma.user.findMany({
             orderBy: {
@@ -951,6 +945,93 @@ app.get('/admin/signin/user_list', async (req , res) => {
     }
 });
 
+app.post('/admin/signin/user_list/delete_user',authorizeAdmin ,async (req, res ) => {
+
+    const {userid, reason} = req.body;
+
+    try {
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                userid: userid
+            },
+            select: {
+                Money: true,
+                username: true,
+                createdAt: true,
+                email: true,
+                phone: true,
+                totalnumberofSignin: true,
+                totalTransactionDone: true,
+                
+            }
+        })
+
+        if(!existingUser) {
+            throw new Error("Userid Not found");
+            
+        }
+        const deleteuser = await prisma.user.delete({
+            where: {
+                userid: userid
+            }
+        })
+
+        await prisma.fraud_People.create({
+            data: {
+                fraud_people_userid: userid,
+                reason : reason,
+                Total_Money: existingUser.Money,
+                username: existingUser.username,
+                createdAt: existingUser.createdAt,
+                email: existingUser.email,
+                phone: existingUser.phone,
+                totalnumberofSignin: existingUser.totalnumberofSignin,
+                totalTransactionDone: existingUser.totalTransactionDone
+            }
+        })
+        res.json({deleteuser})
+        return
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Something went wrong"
+        res.status(400).json({
+            message: errorMessage
+        })
+    }
+
+
+})
+
+app.post('/admin/signin/user_list/freeze_money', authorizeAdmin ,async (req, res) => {
+
+    const {userid} = req.body;
+    try {
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                userid: userid
+            }
+        })
+
+        if(!existingUser) {
+            throw new Error("Userid Not found");
+            
+        }
+        const freeze_money = await prisma.user.update({
+            where: {
+                userid: userid
+            },
+            data: {
+                Money: 0
+            }
+        })
+        res.json({freeze_money})
+        return
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Something went wrong"
+        res.status(400).json({
+            message: errorMessage
+        }) 
+    }
+})
 
 
 app.listen(3000, () => {
