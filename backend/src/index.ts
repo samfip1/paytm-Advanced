@@ -12,6 +12,8 @@ const prisma = new PrismaClient();
 const app = express();
 const SECRET_KEY = endpointsConfig.SK;
 import { Request, Response } from "express";
+import { v4 as uuidv4 } from 'uuid'; // UUID for unique loan ID
+
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "./Middleware/admin.middleware";
 
@@ -526,7 +528,6 @@ app.post('/user/signin/mini_games', authenticateToken, async (req, res) => {
 });
 
 
-import { v4 as uuidv4 } from 'uuid'; // UUID for unique loan ID
 
 app.post('/user/signin/apply_for_loan', authenticateToken, async (req, res) => {
     const { username, loan_Money, time } = req.body;
@@ -630,7 +631,48 @@ cron.schedule('0 0 * * *', async () => {
 
 
 
+app.post('/user/signin/request_for_money', async (req , res) => {
+    
+    const {requester_username, requesting_username, request_money, reason} = req.body;
 
+    try {
+        const requester = await prisma.user.findFirst({
+            where: {
+                username: requester_username
+            }, 
+            select: {
+                Money : true
+            }
+        })
+    
+        if(!requester) {
+            throw new Error("The username provided is Invalid");        
+        }
+        
+        const requesting = await prisma.user.findFirst({
+            where: {
+                username: requesting_username
+            }, 
+            select: {
+                Money: true
+            }
+        })
+
+        if(!requesting) {
+            throw new Error("The Username you provided for Requesting money is not Present in our DataBase");
+        }
+
+        
+
+
+    } catch (error) {
+        
+    }
+
+    
+
+
+})
 
 
 interface adminSignup {

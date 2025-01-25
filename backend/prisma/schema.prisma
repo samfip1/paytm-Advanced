@@ -28,6 +28,15 @@ model User {
     FraudUser           Fraud_People?
 }
 
+model Request {
+    id          Int             @id     @default(autoincrement())
+    requester_username          String      @unique
+    requesting_username            String       @unique
+    request_money             Int
+    requestid           Int         @unique
+    reason              String
+    RequestCreatedAt        DateTime        @default(now())
+}
 
 
 model Loan {
