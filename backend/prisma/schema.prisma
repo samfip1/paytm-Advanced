@@ -23,9 +23,21 @@ model User {
   leaderboardId Int?
   leaderboard leaderboard? @relation(fields: [leaderboardId], references: [id])
   transaction_Pass Transactionpin[] 
-  loginhistory    LoginActivity[] 
+  loginhistory    LoginActivity[]
+  loanMoney     Loan[]
 }
 
+model Loan {
+  id             Int      @id @default(autoincrement())
+  loanId         Int      @unique
+  loanMoney      Decimal
+  time           Int
+  interest       Decimal
+  repaymentDate  DateTime
+  status         String   @default("pending") // pending, repaid, defaulted
+  userId         Int
+  user           User     @relation(fields: [userId], references: [id])
+}
 
 
 
