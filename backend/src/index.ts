@@ -335,7 +335,7 @@ app.get("/user/signin/account", authenticateToken, async (req: Request, res: Res
 
 
 
-async function transfer(senderusername: string, recieveusernmae: string, amount: number, transaction_Pin: number): Promise<void> {
+async function transfer(senderusername: string, recieveusernmae: string, amount: number, transaction_Pin: number, comment: string): Promise<void> {
     try {
         await prisma.$transaction(async (tx) => {
             // Fetch sender's account balance before updating
@@ -387,7 +387,7 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
                     }
                 }
             })
-    
+            
             console.log(`Sender's new balance: ${updatedSender.Money}`);
 
             const transactionid = Math.random() * 989247568973999
@@ -414,7 +414,8 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
                     senderUsername: senderusername,
                     receiverUsername: recieveusernmae,
                     amount: amount,
-                    trasanctionId: transactionid
+                    trasanctionId: transactionid,
+                    Comment: comment
                 }
             })
             console.log(payment);
@@ -432,17 +433,19 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
   
 app.post('/user/signin/transfer', authenticateToken ,async (req, res) => {
     const { from, to, amount, transaction_pin } = req.body;
-  
+    var {comment} = req.body;
     // Validate input
     if (!from || !to || typeof amount !== 'number' || amount <= 0) {
       res.status(400).json({ error: 'Invalid input. Please provide valid `from`, `to`, and `amount`.' });
       return;
     }
 
-    
+    if(!comment) {
+        comment = ""
+    }
 
     try {
-      await transfer(from, to, amount, transaction_pin);
+      await transfer(from, to, amount, transaction_pin, comment);
       res.status(200).json({ message: `Successfully transferred ${amount} from ${from} to ${to}.` });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";

@@ -22,8 +22,12 @@ model User {
   totalnumberofSignin   Int     @default(0)
   leaderboardId Int?
   leaderboard leaderboard? @relation(fields: [leaderboardId], references: [id])
-  transaction_Pass Transactionpin[]  
+  transaction_Pass Transactionpin[] 
+  loginhistory    LoginActivity[] 
 }
+
+
+
 
 model Transactionpin {
   id      Int     @unique   @default(autoincrement())
@@ -31,6 +35,16 @@ model Transactionpin {
   transaction_pin Int   @unique
 }
 
+
+model LoginActivity {
+  id          Int      @id @default(autoincrement())
+  userId      Int      
+  ipAddress   String
+  device      String
+  browser     String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
 
 
 model leaderboard {
@@ -65,6 +79,7 @@ model Transaction {
   amount Int
   TransactionAt   DateTime  @default(now())
   transactionid   Int   @default(0)   @unique
+  Comment   String?   
 }
 
 
