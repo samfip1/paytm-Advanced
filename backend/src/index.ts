@@ -670,24 +670,66 @@ app.post('/user/signin/request_for_money', authenticateToken ,async (req , res) 
 })
 
 
-// app.post('/user/signin/Make_Donation', authenticateToken ,async (req, res ) => {
+app.post('/user/signin/Make_Donation', authenticateToken ,async (req, res ) => {
 
-//     const {userid, DonatedMoney} = req.body;
-//     try {
-//         const existingUser = await prisma.user.findFirst({
-//             where: {
-//                 userid: userid
-//             }, 
-//             select: {
-//                 Money: true
-//             }
-//         })
+    let {userid, DonatedMoney, message} = req.body;
+    if(!message) message = ""
+    try {
+
+        await prisma.$transaction(async (tsx) => {
+            const existingUser = await tsx.user.findFirst({
+                where: {
+                    userid: userid
+                }, 
+                select: {
+                    Money: true,
+                    username: true,
+                    userid: true,
+
+                }
+            })
+            if(!existingUser) {
+                throw new Error("User not Found");
+            }
+            if(existingUser.Money < DonatedMoney) {
+                throw new Error("Sorry to say But you don't have much money");            
+            }
+
+            const donationId = Math.random() * 892345792843572
+
+            const donation = await tsx.donation.create({
+                data: {
+                donationId: donationId,
+                senderUsername: existingUser.username,
+                senderId: existingUser.userid,
+                DonatedMoney: DonatedMoney,
+                message: message
+                }
+            });
+
+            await tsx.user.update({
+                where: {
+                userid: userid
+                },
+                data: {
+                Money: {
+                    decrement: DonatedMoney
+                }
+                }
+            });
+
+            res.status(200).json({ message: "Donation successful", donation });
+
+        })
+
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Something went Wrong"
+        throw new Error(errorMessage);        
+    }
+})
 
 
-//     } catch (error) {
-        
-//     }
-// })
+
 
 
 
@@ -783,6 +825,11 @@ app.get('/user/signin/blog/like_comment', authenticateToken, async (req, res) =>
 });
 
 
+
+
+
+
+
 interface adminSignup {
     username :string;
     password : string;
@@ -804,7 +851,6 @@ const isValidAdmin = async (adminuser : adminSignup) => {
                 ]
             }
         })
-
 
         if(admin) {
             if(admin.username == username) {

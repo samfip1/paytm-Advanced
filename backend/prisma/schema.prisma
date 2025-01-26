@@ -33,12 +33,12 @@ model User {
 
 model Donation {
     id      Int         @default(autoincrement())
-    donationid      Int         @unique
+    donationId      Int
     senderId        Int         @unique
     senderUsername      String
-    DonatedMoney    Int
-    AccountNo       Int     @default(1233333323454355332)  
+    DonatedMoney    Int 
     donation        User        @relation(fields: [senderId], references: [userid])   
+    message         String?
     donatedAt       DateTime       @default(now())
 }
 
