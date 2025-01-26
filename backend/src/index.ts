@@ -46,6 +46,7 @@ interface User {
 interface signinUser {
     username: string;
     password: string;
+    reffarelId? : number;
 }
 
 
@@ -67,7 +68,7 @@ const isValidUser = async (user: User) => {
     });
 
     if (existingUser) {
-        // Customize the error message based on which field is duplicated
+
         if (existingUser.email === email) {
             throw new Error("A user with this email already exists.");
         }
@@ -81,6 +82,9 @@ const isValidUser = async (user: User) => {
     // Generate a unique user ID and hashed password
     const userId = Math.floor(Math.random() * 10000000);
     const hashedPassword = bcrypt.hashSync(password, 12);
+
+    const reffralId = Math.random() * 2049578204872234;
+    
 
     // Generate a random money value
     const randomMoney = Math.floor(Math.random() * (1000000000 - 10000000 + 1)) + 10000000;
@@ -99,7 +103,8 @@ const isValidUser = async (user: User) => {
             email,
             Money: randomMoney,
             phone,
-            userid: userId
+            userid: userId,
+            referralId: reffralId
         },
     });
 
@@ -111,14 +116,45 @@ const isValidUser = async (user: User) => {
 
 // Function to sign in the user
 const signinUser = async (signinUser: signinUser) => {
-    const { username, password } = signinUser;
-
+    const { username, password, reffarelId } = signinUser;
     const existingUser = await prisma.user.findFirst({ where: { username } });
 
     if (!existingUser || !bcrypt.compareSync(password, existingUser.password)) {
         throw new Error("Invalid credentials");
     }
 
+    try {
+
+        await prisma.$transaction(async (atc) => {
+            if(reffarelId != null) {
+                const reffareluser = await atc.user.findFirst({
+                    where: {
+                        referralId: reffarelId
+                    }
+                });
+    
+                if (reffareluser) {
+                    await atc.user.update({
+                        where: {
+                            id: reffareluser.id
+                        },
+                        data: {
+                            Money: {
+                                increment: 83456
+                            }
+                        }
+                    });
+                }
+                if(!reffareluser) {
+                    throw new Error("User with this Referral code Does not exist");                    
+                }
+            }
+        })
+        
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+        console.log(errorMessage)
+    }
     return existingUser;
 };
 
@@ -173,8 +209,10 @@ app.post("/user/signup", async (req, res) => {
 // Signin Route
 app.post("/user/signin", async (req, res) => {
     const { username, password } = req.body;
+    var {reffarelId} = req.body
+    if (!reffarelId) reffarelId = null
     try {
-        const existingUser = await signinUser({ username, password });
+        const existingUser = await signinUser({ username, password, reffarelId });
 
         const token = jwt.sign(
             { id: existingUser.id, username: existingUser.username },
@@ -526,6 +564,12 @@ app.post('/user/signin/mini_games', authenticateToken, async (req, res) => {
         return
     }
 });
+
+
+
+
+
+
 
 
 

@@ -22,13 +22,15 @@ model User {
     totalnumberofSignin  Int              @default(0)
     leaderboardId        Int
     leaderboard          leaderboard?     @relation(fields: [leaderboardId], references: [id])
-    transaction_Pass     Transactionpin[]
-    loginhistory         LoginActivity[]
-    loanMoney            Loan[]
-    FraudUser           Fraud_People?
-    donation            Donation[]
+    transaction_Pass     Transactionpin[] 
+    loginhistory         LoginActivity[] 
+    loanMoney            Loan[] 
+    FraudUser           Fraud_People? 
+    donation            Donation[] 
     blog                blog?
+    referralId           Int             // Changed from refaralId to referralId
 }
+
 
 
 model Donation {
