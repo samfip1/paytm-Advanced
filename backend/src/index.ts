@@ -631,7 +631,7 @@ cron.schedule('0 0 * * *', async () => {
 
 
 
-app.post('/user/signin/request_for_money', async (req , res) => {
+app.post('/user/signin/request_for_money', authenticateToken ,async (req , res) => {
     
     const {requester_username, requesting_username, request_money, reason} = req.body;
 
@@ -662,7 +662,6 @@ app.post('/user/signin/request_for_money', async (req , res) => {
             throw new Error("The Username you provided for Requesting money is not Present in our DataBase");
         }
 
-
     } catch (error) {
         
     }
@@ -671,30 +670,117 @@ app.post('/user/signin/request_for_money', async (req , res) => {
 })
 
 
-app.post('/user/signin/Make_Donation', async (req, res ) => {
+// app.post('/user/signin/Make_Donation', authenticateToken ,async (req, res ) => {
 
-    const {userid, DonatedMoney} = req.body;
+//     const {userid, DonatedMoney} = req.body;
+//     try {
+//         const existingUser = await prisma.user.findFirst({
+//             where: {
+//                 userid: userid
+//             }, 
+//             select: {
+//                 Money: true
+//             }
+//         })
+
+
+//     } catch (error) {
+        
+//     }
+// })
+
+
+
+app.post('/user/signin/blog/create_blog', authenticateToken ,async (req, res) => {
+    
+    const {userid, content, username, HeadingOfContent} = req.body;
     try {
         const existingUser = await prisma.user.findFirst({
             where: {
-                userid: userid
-            }, 
-            select: {
-                Money: true
+                userid : userid
             }
         })
+        if(!existingUser) {
+            throw new Error("User Not found");            
+        }
 
-        
+        if(content == "" || HeadingOfContent == "") {
+            throw new Error("PLease enter Content to post the information");            
+        }
+
+        const contentId  = Math.random() * 52839759483475;
+        const blogUser = await prisma.blog.create({
+            data: {
+                content: content,
+                contentId: contentId,
+                numberOflike: 0,
+                username: username,
+                HeadingOfContent : HeadingOfContent
+            }
+        })
+        res.status(200).json({blogUser})
     } catch (error) {
-        
+        const errorMessage = error instanceof Error ? error.message : "Something Went wrong"
+        res.json({errorMessage})
     }
 })
 
 
 
+app.get('/user/signin/blog', authenticateToken, async (req, res) => {
+    const { userid } = req.body;
+
+    if (!userid) {
+        res.status(400).json({ error: 'userid is required' });
+        return;
+    }
+
+    try {
+        let blogs = await prisma.blog.findMany({
+            where: {
+                contentId: {
+                    not: Number(userid), // Exclude blogs where `contentId` matches the user's ID.
+                },
+            },
+        });
+
+        // Shuffle the blogs array
+        blogs = blogs.sort(() => Math.random() - 0.5);
+
+        res.status(200).json(blogs);
+    } catch (error) {
+        console.error('Error fetching blogs:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 
+app.get('/user/signin/blog/like_comment', authenticateToken, async (req, res) => {
+    const { userid , contentId} = req.body; // Assuming `userid` is provided as a query parameter.
 
+    if (!userid) {
+        res.status(400).json({ error: 'userid is required' });
+        return
+    }
+    try {
+        const like_comment = await prisma.blog.update({
+            where: {
+            contentId: contentId
+            }, 
+            data: {
+            numberOflike: {
+                increment: 1
+            }
+            }
+        });
+
+        res.status(200).json({like_comment})
+
+    } catch (error) {
+        console.error('Error Liking blogs:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 
 interface adminSignup {
@@ -859,6 +945,7 @@ app.post('/admin/signin', async (req, res) => {
         const errorMessage = error instanceof Error ? error.message : ":Error Occured"
         res.status(401).json({ message: errorMessage });
     }
+    
 });
 
 

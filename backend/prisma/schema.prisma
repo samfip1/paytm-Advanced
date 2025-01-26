@@ -27,6 +27,7 @@ model User {
     loanMoney            Loan[]
     FraudUser           Fraud_People?
     donation            Donation[]
+    blog                blog?
 }
 
 
@@ -41,6 +42,18 @@ model Donation {
     donatedAt       DateTime       @default(now())
 }
 
+
+model blog {
+    id      Int         @unique @default(autoincrement())
+    content String 
+    blog    User    @relation(fields: [contentId], references: [userid])
+    username        String
+    HeadingOfContent        String
+    contentId     Int           @unique
+    numberOflike    Int
+    CreatedAt       DateTime        @default(now())
+
+}
 
 model Transaction {
     id               Int      @unique @default(autoincrement())
