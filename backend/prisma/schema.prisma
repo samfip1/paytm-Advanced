@@ -29,8 +29,18 @@ model User {
     donation            Donation[] 
     blog                blog?
     referralId           Int             // Changed from refaralId to referralId
+    requestForMoney     MoneyRequest[]
 }
 
+model MoneyRequest {
+    id          Int         @default(autoincrement())
+    moneyrequest    User    @relation(fields: [moneyRequestId], references: [userid])
+    moneyRequestId          Int         @unique
+    reciverId       Int
+    senderId         Int
+    message         Int
+    
+}
 
 
 model Donation {
