@@ -1241,6 +1241,38 @@ app.post('/admin/signin/user_list/freeze_money', authorizeAdmin ,async (req, res
 })
 
 
+
+app.get('/admin/signin/donation_list', authorizeAdmin, async (req , res) => {
+
+    try {
+        const all_donation_lis = await prisma.donation.findMany({
+            orderBy: {
+                donatedAt: 'asc',
+                DonatedMoney: 'desc'
+            },
+            select: {
+                donatedAt: true,
+                donationId: true,
+                DonatedMoney: true,
+                senderId: true,
+                senderUsername: true,
+                message : true
+
+            }
+        })
+
+        res.status(200).json({all_donation_lis})
+    }
+
+    catch(error) {
+        const errorMessage = error instanceof Error ? error.message : "Something went wrong"
+        res.json({
+            message : errorMessage
+        })
+    }
+})
+
+
 app.listen(3000, () => {
     console.log("Server is running on port 3000");
 });
