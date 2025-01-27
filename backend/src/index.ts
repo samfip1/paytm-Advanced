@@ -163,6 +163,11 @@ const signinUser = async (signinUser: signinUser) => {
 app.post("/user/signup", async (req, res) => {
     const { username, password, name, email , phone, transaction_Pin} = req.body;
 
+    if (!username || !password  || !name || !email || !phone || !transaction_Pin) {
+        res.status(400).json({ error: "All the required Information are not filled" });
+        return
+    }
+
     try {
         const newUser = await isValidUser({
             username,
@@ -209,6 +214,11 @@ app.post("/user/signup", async (req, res) => {
 // Signin Route
 app.post("/user/signin", async (req, res) => {
     const { username, password } = req.body;
+
+    if (!username || !password) {
+        res.status(400).json({ error: "userid is required" });
+        return
+    }
     var {reffarelId} = req.body
     if (!reffarelId) reffarelId = null
     try {
@@ -581,6 +591,12 @@ app.post('/user/signin/mini_games', authenticateToken, async (req, res) => {
 app.post('/user/signin/apply_for_loan', authenticateToken, async (req, res) => {
     const { username, loan_Money, time } = req.body;
 
+    if (!username || !loan_Money || !time) {
+        res.status(400).json({ error: "userid is required" });
+        return
+    }
+
+
     try {
         await prisma.$transaction(async (tx) => {
             // Find the user by username
@@ -684,6 +700,10 @@ cron.schedule('0 0 * * *', async () => {
 app.post('/user/signin/Money_request', authenticateToken, async (req, res) => {
     const { recieverID, senderId, money, message } = req.body;
 
+    if (!recieverID || !senderId || !money || !message) {
+        res.status(400).json({ error: "All the information is not provided" });
+        return
+    }
     try {
         const moneytakerusername = await prisma.user.findFirst({
             where: { userid: senderId },
@@ -726,6 +746,11 @@ app.post('/user/signin/Money_request', authenticateToken, async (req, res) => {
 
 app.post('/user/signin/request_for_approval', authenticateToken, async (req, res) => {
     const { moneyRequestId, action } = req.body; // `action` can be "accept" or "reject"
+
+    if (!moneyRequestId || !action ) {
+        res.status(400).json({ error: "All the information is not provided" });
+        return
+    }
 
     try {
         // Fetch the money request
@@ -806,6 +831,11 @@ app.post('/user/signin/request_for_approval', authenticateToken, async (req, res
 app.post('/user/signin/Make_Donation', authenticateToken ,async (req, res ) => {
 
     let {userid, DonatedMoney, message} = req.body;
+
+    if (!userid || !DonatedMoney || !message ) {
+        res.status(400).json({ error: "All the information is not provided" });
+        return
+    }
     if(!message) message = ""
     try {
 
@@ -869,6 +899,11 @@ app.post('/user/signin/Make_Donation', authenticateToken ,async (req, res ) => {
 app.post('/user/signin/blog/create_blog', authenticateToken ,async (req, res) => {
     
     const {userid, content, username, HeadingOfContent} = req.body;
+
+    if (!userid || !content || !username || !HeadingOfContent) {
+        res.status(400).json({ error: "All the information is not provided" });
+        return
+    }
     try {
         const existingUser = await prisma.user.findFirst({
             where: {
@@ -905,6 +940,7 @@ app.post('/user/signin/blog/create_blog', authenticateToken ,async (req, res) =>
 app.get('/user/signin/blog', authenticateToken, async (req, res) => {
     const { userid } = req.body;
 
+
     if (!userid) {
         res.status(400).json({ error: 'userid is required' });
         return;
@@ -933,7 +969,7 @@ app.get('/user/signin/blog', authenticateToken, async (req, res) => {
 app.get('/user/signin/blog/like_comment', authenticateToken, async (req, res) => {
     const { userid , contentId} = req.body; // Assuming `userid` is provided as a query parameter.
 
-    if (!userid) {
+    if (!userid || !contentId) {
         res.status(400).json({ error: 'userid is required' });
         return
     }
@@ -957,6 +993,147 @@ app.get('/user/signin/blog/like_comment', authenticateToken, async (req, res) =>
     }
 });
 
+
+
+
+app.post('/user/signin/send-request', authenticateToken ,async (req, res) => {
+    const { senderId, receiverId, receiverUsername } = req.body;
+  
+    try {
+
+        const existingUser = await prisma.user.findFirst({
+            where : {
+                userid: senderId
+            }
+        })
+        if (!existingUser) {
+            throw new Error("Username not found");            
+        }
+
+        const recieveruser = await prisma.user.findFirst({
+            where : {
+                userid: receiverId
+            }
+        })
+
+        if(!recieveruser) {
+            throw new Error("This username does not exist");            
+        }
+
+      // Add to sender's sentRequests
+      await prisma.sentRequest.create({
+        data: {
+          userId: senderId,
+          username: receiverUsername,
+        },
+      });
+  
+      // Add to receiver's receivedRequests
+      await prisma.requestFriend.create({
+        data: {
+          userId: receiverId,
+          username: receiverUsername,
+        },
+      });
+  
+      // Increment totalRequests
+      await prisma.user.update({
+        where: { id: receiverId },
+        data: { totalRequests: { increment: 1 } },
+      });
+  
+      res.json({ message: 'Friend request sent successfully.' });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to send friend request' });
+    }
+});
+  
+
+app.post('/accept-request', authenticateToken ,async (req, res) => {
+    const { userId, friendId, friendName } = req.body;
+  
+    try {
+      // Add to friendsList
+      await prisma.friend.create({
+        data: {
+          userId,
+          friendId,
+          friendName,
+        },
+      });
+
+      // Remove from receivedRequests
+      await prisma.requestFriend.deleteMany({
+        where: { userId: userId },
+      });
+  
+      // Remove from sender's sentRequests
+      await prisma.sentRequest.deleteMany({
+        where: { userId: friendId },
+      });
+  
+      res.json({ message: 'Friend request accepted successfully.' });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to accept friend request' });
+    }
+});
+
+
+
+app.get('/user/signin/allFriend', authenticateToken, async (req, res) => {
+    const { userid } = req.body; // Extracting the userid from the request body
+
+    try {
+        // Validate the input
+        if (!userid) {
+            res.status(400).json({ error: "userid is required" });
+            return
+        }
+
+        // Find the user by userid
+        const existingUser = await prisma.user.findFirst({
+            where: { userid },
+        });
+
+        if (!existingUser) {
+            res.status(404).json({ error: "User not found" });
+            return
+        }
+
+        // Fetch all friends of the user
+        const allFriends = await prisma.friend.findMany({
+            where: { userId: existingUser.id },
+        });
+
+        // Return the list of friends
+        res.status(200).json({ friends: allFriends });
+        return
+
+    } catch (error) {
+        // Handle errors
+        console.error("Error fetching friends:", error);
+        res.status(500).json({ error: "Internal server error" });
+        return
+    }
+});
+
+
+
+
+app.get('/user/signin/friends/:userId', authenticateToken ,async (req, res) => {
+    const { userId } = req.params;
+  
+    try {
+      const friends = await prisma.friend.findMany({
+        where: { userId: Number(userId) },
+      });
+  
+      res.json(friends);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch friends list' });
+    }
+  });
+  
 
 
 
