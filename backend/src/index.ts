@@ -104,7 +104,9 @@ const isValidUser = async (user: User) => {
             Money: randomMoney,
             phone,
             userid: userId,
-            referralId: reffralId
+            referralId: reffralId,
+            CreditScore : 0,
+            
         },
     });
 
@@ -232,10 +234,13 @@ app.post("/user/signin", async (req, res) => {
 
         await prisma.user.update({
             where: {
-                username : username
+                username : username,
             },
             data: {
-                totalnumberofSignin: existingUser.totalnumberofSignin + 1
+                totalnumberofSignin: existingUser.totalnumberofSignin + 1,
+                CreditScore: {
+                    increment: 3
+                }
             }
         })
 
@@ -411,6 +416,8 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
                 throw new Error('Your Transaction pin is Incorrect');
             }
             const senderId = sender.userid;
+
+
     
             // Check if sender has enough balance
             if (sender.Money < amount + 18) {
@@ -434,7 +441,10 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
             where: { username: senderusername },
             data: {
                 Money: { decrement: amount },
-                totalTransactionDone: sender.totalTransactionDone + 1
+                totalTransactionDone: sender.totalTransactionDone + 1,
+                CreditScore: {
+                    increment: 6
+                }
             },
             });
 
@@ -533,7 +543,7 @@ async function betgames(money: Money) {
     }
 
     const integer_number = money.bet_number_choice;
-    const upper_limit = Math.min(integer_number % 10, 10); // Limit range to prevent large calculations
+    const upper_limit = integer_number % 10;
 
     let price_money = 0;
 
@@ -551,35 +561,123 @@ async function betgames(money: Money) {
                 price_money = money.input_number + 50 * money.input_number;
             }
         }
+
+        else {
+            let per = 0;
+            const percentageDifference = (Math.abs(bet_number - money.input_number) / money.input_number) * 100;
+        
+            if (percentageDifference < 10) {
+                per = 2 * money.input_number; 
+            } 
+
+            else if (percentageDifference < 20) {
+                per = 1.5 * money.input_number;  
+            }
+
+            else if (percentageDifference < 50) {
+                per = 1.2 * money.input_number; 
+            }
+             
+            else {
+                per = 1 * money.input_number; 
+            }
+
+            price_money += per;
+        }
+        
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message: "An unknown error occurred";
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
         throw new Error(`Error during game execution: ${errorMessage}`);
     }
 
     return price_money;
 }
 
+
 app.post('/user/signin/mini_games', authenticateToken, async (req, res) => {
+
+    const {userId} = req.body
+    const { bet_number_choice, input_number } = req.body;
+
+    if(!userId) throw new Error("Please Enter Username");    
     try {
-        const { bet_number_choice, input_number } = req.body;
 
         if (bet_number_choice === undefined || input_number === undefined) {
             res.status(400).json({ error: "Invalid request body." });
             return
         }
 
-        const money: Money = { bet_number_choice, input_number };
-        const result = await betgames(money);
+        const gamblingUser = await prisma.user.findFirst({
+            where: {
+                userid: userId
+            },
+            select: {
+                Money: true
+            }
+        })
 
+        if(!gamblingUser) {
+            throw new Error("User Does not Exist");            
+        }
+
+        if(gamblingUser.Money < input_number) {
+            throw new Error("You Don't have this much of money in your bank Account");            
+        }
+
+        await prisma.$transaction(async (atx) => {
+
+            try {
+                const betmoneyuser = await atx.user.update({
+                    where: {
+                        userid: userId
+                    },
+                    data : {
+                        Money: {
+                            decrement: input_number
+                        }
+                    }
+                })  
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message: "An unknown error occurred";
+                res.status(500).json({ success: false, error: errorMessage });
+                return
+            } 
+        })
+
+
+        const money2: Money = { bet_number_choice, input_number };
+        const result = await betgames(money2);
+
+        await prisma.$transaction(async (atx) => {
+
+            try {
+                const addmoneyUser = await atx.user.update({
+                    where: {
+                        userid: userId
+                    },
+                    data :{
+                        Money: {
+                            increment: result
+                        }
+                    }
+                })    
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message: "An unknown error occurred";
+                res.status(500).json({ success: false, error: errorMessage });
+                return 
+            }
+        })
+        
         res.status(200).json({ success: true, prize: result });
         return
+
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message: "An unknown error occurred";
         res.status(500).json({ success: false, error: errorMessage });
         return
+
     }
 });
-
 
 
 
@@ -1050,7 +1148,7 @@ app.post('/user/signin/send-request', authenticateToken ,async (req, res) => {
   
 
 app.post('/accept-request', authenticateToken ,async (req, res) => {
-    const { userId, friendId, friendName } = req.body;
+    const { userId, friendId } = req.body;
   
     try {
       // Add to friendsList
@@ -1058,7 +1156,6 @@ app.post('/accept-request', authenticateToken ,async (req, res) => {
         data: {
           userId,
           friendId,
-          friendName,
         },
       });
 
@@ -1581,6 +1678,8 @@ app.get('/admin/signin/donation_list', authorizeAdmin, async (req , res) => {
         })
     }
 })
+
+
 
 app.listen(3000, () => {
     console.log("Server is running on port 3000");

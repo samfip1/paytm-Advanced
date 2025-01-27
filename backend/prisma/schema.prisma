@@ -38,6 +38,7 @@ model User {
   totalRequests        Int              @default(0)
   requestFriends       RequestFriend[]
   Friend               Friend[]
+  CreditScore   Int
 }
 
 model Friend {
