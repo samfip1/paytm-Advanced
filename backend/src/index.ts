@@ -634,9 +634,13 @@ app.post('/user/signin/mini_games', authenticateToken, async (req, res) => {
                     data : {
                         Money: {
                             decrement: input_number
+                        },
+                        CreditScore: {
+                            increment : 20
                         }
                     }
                 })  
+                return betmoneyuser
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message: "An unknown error occurred";
                 res.status(500).json({ success: false, error: errorMessage });
@@ -728,7 +732,12 @@ app.post('/user/signin/apply_for_loan', authenticateToken, async (req, res) => {
                 // Update user's money after loan application
                 await tx.user.update({
                     where: { id: existingUser.id },
-                    data: { Money: Number(existingUser.Money) + loan_Money }
+                    data: { 
+                        Money: Number(existingUser.Money) + loan_Money ,
+                        CreditScore: {
+                            increment: 16
+                        }
+                    }
                 });
 
                 res.status(200).json({ message: "Loan applied successfully" });
@@ -901,12 +910,20 @@ app.post('/user/signin/request_for_approval', authenticateToken, async (req, res
         // Perform the money transfer
         await prisma.user.update({
             where: { userid: senderId },
-            data: { Money: sender.Money - money },
+            data: { 
+                Money: sender.Money - money,
+                CreditScore: 12
+            },
         });
 
         await prisma.user.update({
             where: { userid: reciverId },
-            data: { Money: receiver.Money + money },
+            data: { 
+                Money: receiver.Money + money, 
+                CreditScore: {
+                    decrement: 5
+                }
+            },
         });
 
         // Update the money request status
@@ -968,14 +985,19 @@ app.post('/user/signin/Make_Donation', authenticateToken ,async (req, res ) => {
                 }
             });
 
+            const creditedScore = Math.random() * 27 + 26
+
             await tsx.user.update({
                 where: {
-                userid: userid
+                    userid: userid
                 },
                 data: {
-                Money: {
-                    decrement: DonatedMoney
-                }
+                    Money: {
+                        decrement: DonatedMoney
+                    },
+                    CreditScore: {
+                        increment: creditedScore
+                    }
                 }
             });
 
