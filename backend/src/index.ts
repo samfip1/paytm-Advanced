@@ -680,43 +680,127 @@ cron.schedule('0 0 * * *', async () => {
 
 
 
-app.post('/user/signin/request_for_money', authenticateToken ,async (req , res) => {
-    
-    const {requester_username, requesting_username, request_money, reason} = req.body;
+
+app.post('/user/signin/Money_request', authenticateToken, async (req, res) => {
+    const { recieverID, senderId, money, message } = req.body;
 
     try {
-        const requester = await prisma.user.findFirst({
-            where: {
-                username: requester_username
-            }, 
-            select: {
-                Money : true
-            }
-        })
-    
-        if(!requester) {
-            throw new Error("The username provided is Invalid");        
-        }
-        
-        const requesting = await prisma.user.findFirst({
-            where: {
-                username: requesting_username
-            }, 
-            select: {
-                Money: true
-            }
-        })
+        const moneytakerusername = await prisma.user.findFirst({
+            where: { userid: senderId },
+            select: { Money: true },
+        });
 
-        if(!requesting) {
-            throw new Error("The Username you provided for Requesting money is not Present in our DataBase");
+        const moneysenderusername = await prisma.user.findFirst({
+            where: { userid: recieverID },
+            select: { Money: true, username: true },
+        });
+
+        if (!moneysenderusername) {
+            throw new Error("Sender Username is not available");
+        }
+        if (!moneytakerusername) {
+            throw new Error("Receiver Username is not available");
         }
 
+        const moneyRequestId = Math.floor(Math.random() * 7234984375649829);
+
+        const requesting_user = await prisma.moneyRequest.create({
+            data: {
+                moneyRequestId: moneyRequestId,
+                money: money,
+                reciverId: recieverID,
+                senderId: senderId,
+                message: message,
+                status: "Pending",
+            },
+        });
+
+        res.json({ requesting_user });
     } catch (error) {
-        
+        console.error(error);
+        res.status(500).json({ error });
     }
+});
 
 
-})
+
+app.post('/user/signin/request_for_approval', authenticateToken, async (req, res) => {
+    const { moneyRequestId, action } = req.body; // `action` can be "accept" or "reject"
+
+    try {
+        // Fetch the money request
+        const moneyRequest = await prisma.moneyRequest.findFirst({
+            where: { moneyRequestId },
+        });
+
+        if (!moneyRequest) {
+            throw new Error("Invalid Money Request");
+        }
+
+        // Validate action
+        if (action !== "accept" && action !== "reject") {
+            throw new Error("Invalid action. Action must be either 'accept' or 'reject'");
+        }
+
+        // If action is "reject", update the status and return
+        if (action === "reject") {
+            await prisma.moneyRequest.update({
+                where: { moneyRequestId },
+                data: { status: "rejected" },
+            });
+
+            res.json({ message: "Money request rejected successfully" });
+            return
+        }
+
+        // Action is "accept" — perform the money transfer
+        const { money, senderId, reciverId } = moneyRequest;
+
+        // Fetch sender and receiver details
+        const sender = await prisma.user.findFirst({
+            where: { userid: senderId },
+            select: { Money: true },
+        });
+
+        const receiver = await prisma.user.findFirst({
+            where: { userid: reciverId },
+            select: { Money: true },
+        });
+
+        if (!sender || !receiver) {
+            throw new Error("Sender or receiver not found");
+        }
+
+        if (sender.Money < money) {
+            throw new Error("Insufficient balance in the sender's account");
+        }
+
+        // Perform the money transfer
+        await prisma.user.update({
+            where: { userid: senderId },
+            data: { Money: sender.Money - money },
+        });
+
+        await prisma.user.update({
+            where: { userid: reciverId },
+            data: { Money: receiver.Money + money },
+        });
+
+        // Update the money request status
+        await prisma.moneyRequest.update({
+            where: { moneyRequestId },
+            data: { status: "accepted" },
+        });
+
+        res.json({ message: "Money request accepted and processed successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error });
+    }
+});
+
+
+
 
 
 app.post('/user/signin/Make_Donation', authenticateToken ,async (req, res ) => {
