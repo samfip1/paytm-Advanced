@@ -1171,7 +1171,7 @@ app.post('/user/signin/send-request', authenticateToken ,async (req, res) => {
 });
   
 
-app.post('/accept-request', authenticateToken ,async (req, res) => {
+app.post('/user/signinaccept-request', authenticateToken ,async (req, res) => {
     const { userId, friendId } = req.body;
   
     try {
