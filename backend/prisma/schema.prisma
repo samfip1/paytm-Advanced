@@ -23,14 +23,14 @@ model User {
   totalTransactionDone Int              @default(0)
   totalnumberofSignin  Int              @default(0)
   leaderboardId        Int
-  leaderboard          leaderboard?     @relation(fields: [leaderboardId], references: [id])
+  leaderboard          leaderboard     @relation(fields: [leaderboardId], references: [id])
   transaction_Pass     Transactionpin[]
   loginhistory         LoginActivity[]
   loanMoney            Loan[]
   FraudUser            Fraud_People?
   donation             Donation[]
   blog                 blog?
-  referralId           Int
+  referralId           Int          @default(0)
   requestForMoney      MoneyRequest?
   sentRequests         SentRequest[]
   receivedRequests     Request[]
@@ -38,7 +38,7 @@ model User {
   totalRequests        Int              @default(0)
   requestFriends       RequestFriend[]
   Friend               Friend[]
-  CreditScore   Int
+  CreditScore   Int     @default(0)
 }
 
 model Friend {
@@ -160,7 +160,7 @@ model leaderboard {
 }
 
 model Admin {
-  id          Int      @unique @default(autoincrement())
+  id          Int      @unique @default(autoincrement())    @id
   name        String
   username    String   @unique
   password    String
