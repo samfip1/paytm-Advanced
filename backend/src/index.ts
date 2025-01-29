@@ -7,13 +7,12 @@ import cookieParser from "cookie-parser";
 import { authenticateToken } from "./Middleware/auth.middleware";
 import * as dotenv from 'dotenv';
 dotenv.config();
-import endpointsConfig from "./Middleware/endpoints.config";
+import endpointsConfig from "./Routes/User/Middleware/endpoints.config";
 const prisma = new PrismaClient();
 const app = express();
 const SECRET_KEY = endpointsConfig.SK;
 import { Request, Response } from "express";
 import { v4 as uuidv4 } from 'uuid'; 
-import zod from "zod";
 
 
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
