@@ -27,7 +27,7 @@ app.use(cookieParser());
 
 
 
-router.post('/admin/signin/user_list/delete_user',authorizeAdmin ,async (req, res ) => {
+router.post('/user_list/delete_user',authorizeAdmin ,async (req, res ) => {
 
     const {userid, reason} = req.body;
 
@@ -83,7 +83,7 @@ router.post('/admin/signin/user_list/delete_user',authorizeAdmin ,async (req, re
 
 })
 
-router.post('/admin/signin/user_list/freeze_money', authorizeAdmin ,async (req, res) => {
+router.post('/user_list/freeze_money', authorizeAdmin ,async (req, res) => {
 
     const {userid} = req.body;
     try {
@@ -117,7 +117,7 @@ router.post('/admin/signin/user_list/freeze_money', authorizeAdmin ,async (req, 
 
 
 
-router.get('/admin/signin/donation_list', authorizeAdmin, async (req , res) => {
+router.get('/donation_list', authorizeAdmin, async (req , res) => {
 
     try {
         const all_donation_lis = await prisma.donation.findMany({

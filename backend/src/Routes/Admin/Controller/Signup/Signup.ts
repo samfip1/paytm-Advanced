@@ -75,7 +75,7 @@ const isValidAdmin = async (adminuser : adminSignup) => {
 }
 
 
-router.post('/admin/signup', async (req, res) => {
+router.post('/', async (req, res) => {
     const {username, password, name, email, phone} = req.body;
 
     try {

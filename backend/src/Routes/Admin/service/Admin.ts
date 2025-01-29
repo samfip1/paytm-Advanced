@@ -24,7 +24,7 @@ app.use(cookieParser());
 
 
 
-router.put('/admin/signin/update', authorizeAdmin,async (req, res) => {
+router.put('/update', authorizeAdmin,async (req, res) => {
     const {username, newUsername} = req.body;
 
     const adminUpdate = await prisma.admin.findFirst({
@@ -60,7 +60,7 @@ router.put('/admin/signin/update', authorizeAdmin,async (req, res) => {
 
 
 
-router.get('/admin/signin/profile', authorizeAdmin ,async (req, res) => {
+router.get('/profile', authorizeAdmin ,async (req, res) => {
 
     const {username} = req.body;
 
@@ -96,7 +96,7 @@ router.get('/admin/signin/profile', authorizeAdmin ,async (req, res) => {
 
 
 
-router.get('/admin/signin/user_transaction',  authorizeAdmin,async (req, res) => {
+router.get('/user_transaction',  authorizeAdmin,async (req, res) => {
     try {
       // Fetch all transactions from the database
       const allTransactionList = await prisma.transaction.findMany();
@@ -113,7 +113,7 @@ router.get('/admin/signin/user_transaction',  authorizeAdmin,async (req, res) =>
 
 
   
-router.get(['/admin/signin/leaderboard', '/user/signin/leaderboard'], authorizeAdmin, authenticateToken, async (req, res) => {
+router.get('/leaderboard', authorizeAdmin, authenticateToken, async (req, res) => {
       try {
         const leaderboardData = await prisma.leaderboard.findMany({
           include: {
@@ -157,7 +157,7 @@ router.get(['/admin/signin/leaderboard', '/user/signin/leaderboard'], authorizeA
 );
   
 
-router.get('/admin/signin/user_list',authorizeAdmin ,async (req , res) => {
+router.get('/user_list',authorizeAdmin ,async (req , res) => {
     try {
         const total_user_list = await prisma.user.findMany({
             orderBy: {

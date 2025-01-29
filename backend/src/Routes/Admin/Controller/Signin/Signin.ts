@@ -43,7 +43,7 @@ async function signinAdmin(admin: AdminLogin) {
     return adminLogger; 
 }
 
-router.post('/signin', async (req, res) => {
+router.post('/', async (req, res) => {
     const { username, password } = req.body;
 
     try {
