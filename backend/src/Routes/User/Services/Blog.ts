@@ -15,6 +15,8 @@ import { Request, Response } from "express";
 import { v4 as uuidv4 } from 'uuid'; 
 import zod from "zod";
 
+const router = express.Router();
+
 
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "./Middleware/admin.middleware";
@@ -37,7 +39,7 @@ app.use(cookieParser());
 
 
 
-app.post('/user/signin/blog/create_blog', authenticateToken ,async (req, res) => {
+router.post('/blog/create_blog', authenticateToken ,async (req, res) => {
     
     const {userid, content, username, HeadingOfContent} = req.body;
 
@@ -78,7 +80,7 @@ app.post('/user/signin/blog/create_blog', authenticateToken ,async (req, res) =>
 
 
 
-app.get('/user/signin/blog', authenticateToken, async (req, res) => {
+router.get('/blog', authenticateToken, async (req, res) => {
     const { userid } = req.body;
 
 
@@ -107,7 +109,7 @@ app.get('/user/signin/blog', authenticateToken, async (req, res) => {
 });
 
 
-app.get('/user/signin/blog/like_comment', authenticateToken, async (req, res) => {
+router.get('/blog/like_comment', authenticateToken, async (req, res) => {
     const { userid , contentId} = req.body; // Assuming `userid` is provided as a query parameter.
 
     if (!userid || !contentId) {
@@ -133,3 +135,8 @@ app.get('/user/signin/blog/like_comment', authenticateToken, async (req, res) =>
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+
+
+
+export default router

@@ -15,6 +15,8 @@ import { Request, Response } from "express";
 import { v4 as uuidv4 } from 'uuid'; 
 import zod from "zod";
 
+const router = express.Router();
+
 
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "./Middleware/admin.middleware";
@@ -35,7 +37,7 @@ app.use(cookieParser());
 
 
 
-app.post('/user/signin/Make_Donation', authenticateToken ,async (req, res ) => {
+router.post('/Make_Donation', authenticateToken ,async (req, res ) => {
 
     let {userid, DonatedMoney, message} = req.body;
 
@@ -102,3 +104,8 @@ app.post('/user/signin/Make_Donation', authenticateToken ,async (req, res ) => {
         throw new Error(errorMessage);        
     }
 })
+
+
+
+
+export default router

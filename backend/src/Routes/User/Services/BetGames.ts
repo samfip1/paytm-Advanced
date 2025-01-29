@@ -15,6 +15,9 @@ import { Request, Response } from "express";
 import { v4 as uuidv4 } from 'uuid'; 
 import zod from "zod";
 
+const router = express.Router();
+
+
 
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "./Middleware/admin.middleware";
@@ -103,7 +106,7 @@ async function betgames(money: Money) {
 }
 
 
-app.post('/user/signin/mini_games', authenticateToken, async (req, res) => {
+router.post('/mini_games', authenticateToken, async (req, res) => {
 
     const {userId} = req.body
     const { bet_number_choice, input_number } = req.body;
@@ -191,3 +194,7 @@ app.post('/user/signin/mini_games', authenticateToken, async (req, res) => {
 
     }
 });
+
+
+
+export default router

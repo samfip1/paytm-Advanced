@@ -16,6 +16,9 @@ import { v4 as uuidv4 } from 'uuid';
 import zod from "zod";
 
 
+const router = express.Router();
+
+
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "./Middleware/admin.middleware";
 
@@ -36,7 +39,7 @@ app.use(cookieParser());
 
 
 
-app.post('/user/signin/Money_request', authenticateToken, async (req, res) => {
+router.post('/Money_request', authenticateToken, async (req, res) => {
     const { recieverID, senderId, money, message } = req.body;
 
     if (!recieverID || !senderId || !money || !message) {
@@ -83,7 +86,7 @@ app.post('/user/signin/Money_request', authenticateToken, async (req, res) => {
 
 
 
-app.post('/user/signin/request_for_approval', authenticateToken, async (req, res) => {
+router.post('/request_for_approval', authenticateToken, async (req, res) => {
     const { moneyRequestId, action } = req.body; // `action` can be "accept" or "reject"
 
     if (!moneyRequestId || !action ) {
@@ -170,3 +173,8 @@ app.post('/user/signin/request_for_approval', authenticateToken, async (req, res
         res.status(500).json({ error });
     }
 });
+
+
+
+
+export default router

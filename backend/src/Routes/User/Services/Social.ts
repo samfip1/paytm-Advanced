@@ -15,6 +15,8 @@ import { Request, Response } from "express";
 import { v4 as uuidv4 } from 'uuid'; 
 import zod from "zod";
 
+const router = express.Router();
+
 
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "./Middleware/admin.middleware";
@@ -41,7 +43,7 @@ app.use(cookieParser());
 
 
 
-app.post('/user/signin/send-request', authenticateToken ,async (req, res) => {
+router.post('/send-request', authenticateToken ,async (req, res) => {
     const { senderId, receiverId, receiverUsername } = req.body;
   
     try {
@@ -94,7 +96,7 @@ app.post('/user/signin/send-request', authenticateToken ,async (req, res) => {
 });
   
 
-app.post('/user/signinaccept-request', authenticateToken ,async (req, res) => {
+router.post('/accept-request', authenticateToken ,async (req, res) => {
     const { userId, friendId } = req.body;
   
     try {
@@ -124,7 +126,7 @@ app.post('/user/signinaccept-request', authenticateToken ,async (req, res) => {
 
 
 
-app.get('/user/signin/allFriend', authenticateToken, async (req, res) => {
+router.get('/allFriend', authenticateToken, async (req, res) => {
     const { userid } = req.body; // Extracting the userid from the request body
 
     try {
@@ -164,7 +166,7 @@ app.get('/user/signin/allFriend', authenticateToken, async (req, res) => {
 
 
 
-app.get('/user/signin/friends/:userId', authenticateToken ,async (req, res) => {
+router.get('/friends/:userId', authenticateToken ,async (req, res) => {
     const { userId } = req.params;
   
     try {
@@ -179,3 +181,4 @@ app.get('/user/signin/friends/:userId', authenticateToken ,async (req, res) => {
   });
   
 
+  export default router

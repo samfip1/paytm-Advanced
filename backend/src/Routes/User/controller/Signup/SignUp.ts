@@ -16,6 +16,9 @@ import { v4 as uuidv4 } from 'uuid';
 import zod from "zod";
 
 
+const router = express.Router();
+
+
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "./Middleware/admin.middleware";
 
@@ -120,7 +123,7 @@ const isValidUser = async (user: User) => {
 
 
 // Signup Route
-app.post("/user/signup", async (req, res) => {
+app.post("/SignUp", async (req, res) => {
     const { username, password, name, email , phone, transaction_Pin} = req.body;
 
     if (!username || !password  || !name || !email || !phone || !transaction_Pin) {
@@ -168,3 +171,7 @@ app.post("/user/signup", async (req, res) => {
         res.status(500).json({ message: errorMessage });
     }
 });
+
+
+
+export default router

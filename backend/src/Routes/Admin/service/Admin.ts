@@ -15,6 +15,9 @@ import { Request, Response } from "express";
 import { v4 as uuidv4 } from 'uuid'; 
 import zod from "zod";
 
+const router = express.Router();
+
+
 
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "./Middleware/admin.middleware";
@@ -202,3 +205,9 @@ app.get('/admin/signin/user_list',authorizeAdmin ,async (req , res) => {
         res.status(500).json({ error: 'Failed to fetch user list' });
     }
 });
+
+
+
+
+
+export default router

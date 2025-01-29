@@ -16,6 +16,9 @@ import { v4 as uuidv4 } from 'uuid';
 import zod from "zod";
 
 
+const router = express.Router();
+
+
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "./Middleware/admin.middleware";
 
@@ -57,7 +60,7 @@ async function signinAdmin(admin: AdminLogin) {
     return adminLogger; 
 }
 
-app.post('/admin/signin', async (req, res) => {
+router.post('/signin', async (req, res) => {
     const { username, password } = req.body;
 
     try {
@@ -98,3 +101,8 @@ app.post('/admin/signin', async (req, res) => {
     }
     
 });
+
+
+
+
+export default router

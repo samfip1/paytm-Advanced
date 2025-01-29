@@ -15,6 +15,8 @@ import { Request, Response } from "express";
 import { v4 as uuidv4 } from 'uuid'; 
 import zod from "zod";
 
+const router = express.Router();
+
 
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "./Middleware/admin.middleware";
@@ -155,3 +157,7 @@ app.get('/admin/signin/donation_list', authorizeAdmin, async (req , res) => {
         })
     }
 })
+
+
+
+export default router

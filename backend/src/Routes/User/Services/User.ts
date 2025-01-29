@@ -15,6 +15,8 @@ import { Request, Response } from "express";
 import { v4 as uuidv4 } from 'uuid'; 
 import zod from "zod";
 
+const router = express.Router();
+
 
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "./Middleware/admin.middleware";
@@ -38,7 +40,7 @@ app.use(cookieParser());
 
 
 
-app.get("/user/signin/balance", authenticateToken, async (req, res) => {
+router.get("/balance", authenticateToken, async (req, res) => {
     const userid = (req as AuthenticatedRequest).user;
     try {
         const user = await prisma.user.findUnique({ where: { id: userid.id } });
@@ -59,7 +61,7 @@ app.get("/user/signin/balance", authenticateToken, async (req, res) => {
 
 
 
-app.post('/user/signin/update', authenticateToken, async (req, res) => {
+router.post('/update', authenticateToken, async (req, res) => {
     const { username, newUsername } = req.body;
 
     // Check if required fields are provided
@@ -112,7 +114,7 @@ app.post('/user/signin/update', authenticateToken, async (req, res) => {
 
 
 
-app.get("/user/signin/account", authenticateToken, async (req: Request, res: Response) => {
+router.get("/account", authenticateToken, async (req: Request, res: Response) => {
     const user = (req as AuthenticatedRequest).user;
 
     if (!user) {
@@ -145,3 +147,8 @@ app.get("/user/signin/account", authenticateToken, async (req: Request, res: Res
         res.status(500).json({ message: "Internal Server Error" });
     }
 });
+
+
+
+
+export default router

@@ -16,6 +16,9 @@ import { v4 as uuidv4 } from 'uuid';
 import zod from "zod";
 
 
+const router = express.Router();
+
+
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "./Middleware/admin.middleware";
 
@@ -37,7 +40,7 @@ app.use(cookieParser());
 
 
 
-app.post('/user/signin/apply_for_loan', authenticateToken, async (req, res) => {
+router.post('/apply_for_loan', authenticateToken, async (req, res) => {
     const { username, loan_Money, time } = req.body;
 
     if (!username || !loan_Money || !time) {
@@ -147,3 +150,7 @@ cron.schedule('0 0 * * *', async () => {
         console.error("Error processing loan repayments:", error);
     }
 });
+
+
+
+export default router
