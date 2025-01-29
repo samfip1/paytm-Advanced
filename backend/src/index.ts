@@ -16,7 +16,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 
 const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
-import { authorizeAdmin } from "./Middleware/admin.middleware";
+import { authorizeAdmin } from "./Routes/Admin/Middleware/admin.middleware";
 
 import cron from 'node-cron';
 
