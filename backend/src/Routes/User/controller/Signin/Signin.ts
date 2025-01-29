@@ -4,36 +4,23 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { authenticateToken } from "./Middleware/auth.middleware";
 import * as dotenv from 'dotenv';
 dotenv.config();
-import endpointsConfig from "./Routes/User/Middleware/endpoints.config";
+import endpointsConfig from "../../Middleware/endpoints.config";
 const prisma = new PrismaClient();
 const app = express();
 const SECRET_KEY = endpointsConfig.SK;
-import { Request, Response } from "express";
-import { v4 as uuidv4 } from 'uuid'; 
-import zod from "zod";
-
 
 const router = express.Router();
 
-
-
-const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
-import { authorizeAdmin } from "./Middleware/admin.middleware";
-
-import cron from 'node-cron';
-
-interface AuthenticatedRequest extends Request {
-    user: {
-        id: number;
-        username: string;
-    };
-}
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+
+
+
+
+
 
 
 
@@ -43,7 +30,6 @@ interface signinUser {
     password: string;
     reffarelId? : number;
 }
-
 
 
 // Function to sign in the user
@@ -93,7 +79,7 @@ const signinUser = async (signinUser: signinUser) => {
 
 
 // Signin Route
-app.post("/SignIn", async (req, res) => {
+router.post("/SignIn", async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
