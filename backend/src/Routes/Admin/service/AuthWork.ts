@@ -1,34 +1,25 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { authenticateToken } from "./Middleware/auth.middleware";
 import * as dotenv from 'dotenv';
 dotenv.config();
-import endpointsConfig from "./Routes/User/Middleware/endpoints.config";
+import endpointsConfig from "../Middleware/endpoints.config";
 const prisma = new PrismaClient();
 const app = express();
-const SECRET_KEY = endpointsConfig.SK;
-import { Request, Response } from "express";
-import { v4 as uuidv4 } from 'uuid'; 
-import zod from "zod";
-
+// const SECRET_KEY = endpointsConfig.SK;
+import { Request } from "express";
 const router = express.Router();
 
 
-const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
-import { authorizeAdmin } from "./Middleware/admin.middleware";
+// const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
+import { authorizeAdmin } from "../Middleware/admin.middleware"
 
-import cron from 'node-cron';
 
-interface AuthenticatedRequest extends Request {
-    user: {
-        id: number;
-        username: string;
-    };
-}
+
+
+
+
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
@@ -36,9 +27,7 @@ app.use(cookieParser());
 
 
 
-
-
-app.post('/admin/signin/user_list/delete_user',authorizeAdmin ,async (req, res ) => {
+router.post('/admin/signin/user_list/delete_user',authorizeAdmin ,async (req, res ) => {
 
     const {userid, reason} = req.body;
 
@@ -94,7 +83,7 @@ app.post('/admin/signin/user_list/delete_user',authorizeAdmin ,async (req, res )
 
 })
 
-app.post('/admin/signin/user_list/freeze_money', authorizeAdmin ,async (req, res) => {
+router.post('/admin/signin/user_list/freeze_money', authorizeAdmin ,async (req, res) => {
 
     const {userid} = req.body;
     try {
@@ -128,7 +117,7 @@ app.post('/admin/signin/user_list/freeze_money', authorizeAdmin ,async (req, res
 
 
 
-app.get('/admin/signin/donation_list', authorizeAdmin, async (req , res) => {
+router.get('/admin/signin/donation_list', authorizeAdmin, async (req , res) => {
 
     try {
         const all_donation_lis = await prisma.donation.findMany({

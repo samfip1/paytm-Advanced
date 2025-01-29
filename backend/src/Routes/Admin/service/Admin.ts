@@ -1,50 +1,30 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { authenticateToken } from "./Middleware/auth.middleware";
+import { authenticateToken } from "../../User/Middleware/auth.middleware";
 import * as dotenv from 'dotenv';
 dotenv.config();
-import endpointsConfig from "./Routes/User/Middleware/endpoints.config";
+import endpointsConfig from "../Middleware/endpoints.config";
 const prisma = new PrismaClient();
 const app = express();
-const SECRET_KEY = endpointsConfig.SK;
-import { Request, Response } from "express";
-import { v4 as uuidv4 } from 'uuid'; 
-import zod from "zod";
+// const SECRET_KEY = endpointsConfig.SK;
+import { Request } from "express";
 
 const router = express.Router();
 
 
 
-const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
-import { authorizeAdmin } from "./Middleware/admin.middleware";
+// const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
+import { authorizeAdmin } from "../Middleware/admin.middleware";
 
-import cron from 'node-cron';
-
-interface AuthenticatedRequest extends Request {
-    user: {
-        id: number;
-        username: string;
-    };
-}
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
 
 
-
-
-
-
-
-
-
-
-app.put('/admin/signin/update', authorizeAdmin,async (req, res) => {
+router.put('/admin/signin/update', authorizeAdmin,async (req, res) => {
     const {username, newUsername} = req.body;
 
     const adminUpdate = await prisma.admin.findFirst({
@@ -80,7 +60,7 @@ app.put('/admin/signin/update', authorizeAdmin,async (req, res) => {
 
 
 
-app.get('/admin/signin/profile', authorizeAdmin ,async (req, res) => {
+router.get('/admin/signin/profile', authorizeAdmin ,async (req, res) => {
 
     const {username} = req.body;
 
@@ -116,7 +96,7 @@ app.get('/admin/signin/profile', authorizeAdmin ,async (req, res) => {
 
 
 
-app.get('/admin/signin/user_transaction',  authorizeAdmin,async (req, res) => {
+router.get('/admin/signin/user_transaction',  authorizeAdmin,async (req, res) => {
     try {
       // Fetch all transactions from the database
       const allTransactionList = await prisma.transaction.findMany();
@@ -133,7 +113,7 @@ app.get('/admin/signin/user_transaction',  authorizeAdmin,async (req, res) => {
 
 
   
-app.get(['/admin/signin/leaderboard', '/user/signin/leaderboard'], authorizeAdmin, authenticateToken, async (req, res) => {
+router.get(['/admin/signin/leaderboard', '/user/signin/leaderboard'], authorizeAdmin, authenticateToken, async (req, res) => {
       try {
         const leaderboardData = await prisma.leaderboard.findMany({
           include: {
@@ -177,7 +157,7 @@ app.get(['/admin/signin/leaderboard', '/user/signin/leaderboard'], authorizeAdmi
 );
   
 
-app.get('/admin/signin/user_list',authorizeAdmin ,async (req , res) => {
+router.get('/admin/signin/user_list',authorizeAdmin ,async (req , res) => {
     try {
         const total_user_list = await prisma.user.findMany({
             orderBy: {
