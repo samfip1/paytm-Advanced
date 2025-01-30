@@ -5,11 +5,9 @@ import cookieParser from "cookie-parser";
 import { authenticateToken } from "../../User/Middleware/auth.middleware";
 import * as dotenv from 'dotenv';
 dotenv.config();
-import endpointsConfig from "../Middleware/endpoints.config";
 const prisma = new PrismaClient();
 const app = express();
 // const SECRET_KEY = endpointsConfig.SK;
-import { Request } from "express";
 
 const router = express.Router();
 
@@ -17,7 +15,6 @@ const router = express.Router();
 
 // const SECRET_KET_ADMIN = endpointsConfig.SK_Admin;
 import { authorizeAdmin } from "../Middleware/admin.middleware";
-
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
@@ -62,7 +59,7 @@ router.put('/update', authorizeAdmin,async (req, res) => {
 
 router.get('/profile', authorizeAdmin ,async (req, res) => {
 
-    const {username} = req.body;
+    const {username} = (req as any).user;
 
     try {
     const AdminPRofile = await prisma.admin.findUnique({
@@ -98,14 +95,13 @@ router.get('/profile', authorizeAdmin ,async (req, res) => {
 
 router.get('/user_transaction',  authorizeAdmin,async (req, res) => {
     try {
-      // Fetch all transactions from the database
+
       const allTransactionList = await prisma.transaction.findMany();
       
-      // Send the transactions as a response
       res.status(200).json(allTransactionList);
+
     } catch (error) {
       console.error("Error fetching transactions:", error);
-      // Send an error response
       res.status(500).json({ error: "Failed to fetch transactions" });
     }
 });
@@ -113,7 +109,7 @@ router.get('/user_transaction',  authorizeAdmin,async (req, res) => {
 
 
   
-router.get('/leaderboard', authorizeAdmin, authenticateToken, async (req, res) => {
+router.get('/leaderboard', authorizeAdmin, async (req, res) => {
       try {
         const leaderboardData = await prisma.leaderboard.findMany({
           include: {

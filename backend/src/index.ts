@@ -8,10 +8,10 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-import Admin from '../src/Routes/Admin/Routes/AdminRoutes'
-import user from '../src/Routes/User/Routes/UserRoute'
-app.use('/admin', Admin);
-app.use('/user', user);
+import Admin from "./Routes/Admin/Routes/AdminRoutes"
+import user from "./Routes/User/Routes/UserRoute"
+app.use('/api/v1/admin', Admin);
+app.use('/api/v1/user', user);
 
 const PORT = 5000;
 app.listen(PORT, () => {

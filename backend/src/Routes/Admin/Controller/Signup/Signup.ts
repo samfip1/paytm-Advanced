@@ -54,7 +54,7 @@ const isValidAdmin = async (adminuser: adminSignup) => {
             }
         }
 
-        const adminid = Math.random() *562562837456587 // Generate unique admin ID
+        const adminid = Math.random() *56856587 // Generate unique admin ID
         const hashPasswordAdmin = await bcrypt.hash(password, 12); // Use async hash
         const Newadmin = await prisma.admin.create({
             data: {

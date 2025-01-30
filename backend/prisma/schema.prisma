@@ -23,7 +23,7 @@ model User {
   totalTransactionDone Int              @default(0)
   totalnumberofSignin  Int              @default(0)
   leaderboardId        Int
-  leaderboard          leaderboard     @relation(fields: [leaderboardId], references: [id])
+  leaderboard          leaderboard?     @relation(fields: [leaderboardId], references: [id])
   transaction_Pass     Transactionpin[]
   loginhistory         LoginActivity[]
   loanMoney            Loan[]
