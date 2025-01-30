@@ -45,7 +45,7 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
             if (!sender) {
                 throw new Error(`Sender with username ${senderusername} does not exist.`);
             }
-            if (!sender.transaction_Pass.some(tp => tp.transaction_pin === transaction_Pin)) {
+            if (!sender.transaction_Pass.some(tp => tp.transaction_Pin === transaction_Pin)) {
                 throw new Error('Your Transaction pin is Incorrect');
             }
             const senderId = sender.userid;

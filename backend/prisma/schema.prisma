@@ -22,9 +22,9 @@ model User {
   userid               Int              @unique @default(0)
   totalTransactionDone Int              @default(0)
   totalnumberofSignin  Int              @default(0)
-  leaderboardId        Int
+  leaderboardId        Int              @unique
   leaderboard          leaderboard?     @relation(fields: [leaderboardId], references: [id])
-  transaction_Pass     Transactionpin[]
+  transaction_Pass     Transaction_Pass[]
   loginhistory         LoginActivity[]
   loanMoney            Loan[]
   FraudUser            Fraud_People?
@@ -34,13 +34,19 @@ model User {
   requestForMoney      MoneyRequest?
   sentRequests         SentRequest[]
   receivedRequests     Request[]
-  friendsList          Friend[]         @relation("FriendUser") // Users who are friends
+  friendsList          Friend[]         @relation("FriendUser") 
   totalRequests        Int              @default(0)
   requestFriends       RequestFriend[]
   Friend               Friend[]
   CreditScore   Int     @default(0)
 }
 
+model Transaction_Pass {
+  id    Int     @unique       @id   @default(autoincrement())
+  userId  Int
+  user  User  @relation(fields: [userId], references: [userid])
+  transaction_Pin     Int    @unique
+}
 model Friend {
   id        Int      @id @default(autoincrement())
   user      User     @relation(fields: [userId], references: [id])
@@ -135,11 +141,7 @@ model Loan {
   user          User     @relation(fields: [userId], references: [id])
 }
 
-model Transactionpin {
-  id              Int  @unique @default(autoincrement())
-  user            User @relation(fields: [transaction_pin], references: [userid])
-  transaction_pin Int  @unique
-}
+
 
 // left to implement
 model LoginActivity {

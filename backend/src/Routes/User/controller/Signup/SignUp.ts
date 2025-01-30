@@ -37,10 +37,8 @@ interface User {
 }
 
 
-
-// Function to check if the user is valid and create a new user
 const isValidUser = async (user: User) => {
-    const { username, password, name, email, phone , transaction_Pin} = user;
+    const { username, password, name, email, phone, transaction_Pin } = user;
 
     // Check for duplicate email, username, or phone
     const existingUser = await prisma.user.findFirst({
@@ -54,7 +52,6 @@ const isValidUser = async (user: User) => {
     });
 
     if (existingUser) {
-
         if (existingUser.email === email) {
             throw new Error("A user with this email already exists.");
         }
@@ -65,22 +62,14 @@ const isValidUser = async (user: User) => {
             throw new Error("A user with this phone number already exists.");
         }
     }
+
     // Generate a unique user ID and hashed password
     const userId = Math.floor(Math.random() * 10000000);
     const hashedPassword = bcrypt.hashSync(password, 12);
+    const referralId = Math.random() * 204482234;
+    const randomMoney = Math.floor(Math.random() * (1000000 - 1000000 + 1)) + 1000000;
 
-    const reffralId = Math.random() * 2049578204872234;
-    
-
-    // Generate a random money value
-    const randomMoney = Math.floor(Math.random() * (1000000000 - 10000000 + 1)) + 10000000;
-
-    await prisma.transactionpin.create({
-        data: {
-            transaction_pin: transaction_Pin
-        }
-    })
-    // Create a new user in the database
+    // Create the new user in the database first
     const newUser = await prisma.user.create({
         data: {
             username,
@@ -90,31 +79,37 @@ const isValidUser = async (user: User) => {
             Money: randomMoney,
             phone,
             userid: userId,
-            referralId: reffralId,
-            CreditScore : 0,
-            
+            referralId: referralId,
+            CreditScore: 0
         },
+    });
+
+    // Now that the user is created, insert the transaction pass
+    await prisma.transaction_Pass.create({
+        data: {
+            user: {
+                connect: { userid: newUser.userid }
+            },
+            transaction_Pin: transaction_Pin
+        }
     });
 
     return newUser;
 };
 
 
-
-
-
-
-
 // Signup Route
-router.post("/SignUp", async (req, res) => {
-    const { username, password, name, email , phone, transaction_Pin} = req.body;
+router.post("/", async (req, res) => {
+    const { username, password, name, email, phone, transaction_Pin } = req.body;
 
-    if (!username || !password  || !name || !email || !phone || !transaction_Pin) {
+
+    if (!username || !password || !name || !email || !phone || !transaction_Pin) {
         res.status(400).json({ error: "All the required Information are not filled" });
         return
     }
 
     try {
+
         const newUser = await isValidUser({
             username,
             password,
@@ -122,19 +117,18 @@ router.post("/SignUp", async (req, res) => {
             email,
             Money: 0,
             phone,
-            userid:0,
-            transaction_Pin: transaction_Pin
+            userid: 0, // Temporary as userId is generated in the isValidUser function
+            transaction_Pin
         });
 
-
-
-                                        // JWT SIGNIN
-        const token = jwt.sign(             
+        // Generate JWT token for the user
+        const token = jwt.sign(
             { id: newUser.id, username: newUser.username },
             SECRET_KEY,
             { expiresIn: "1h" }
         );
 
+        // Set token in cookie and respond with user details
         res.cookie("token", token, { httpOnly: true });
         res.status(201).json({
             message: "User created successfully",
@@ -145,7 +139,7 @@ router.post("/SignUp", async (req, res) => {
                 email: newUser.email,
                 money: newUser.Money,
                 phone: newUser.phone,
-                createAt: newUser.createdAt,
+                createdAt: newUser.createdAt,
                 userid: newUser.userid
             },
         });
