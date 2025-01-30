@@ -9,6 +9,8 @@ datasource db {
 
 
 
+
+
 model User {
   id                   Int              @id @default(autoincrement())
   name                 String
@@ -22,15 +24,15 @@ model User {
   userid               Int              @unique @default(0)
   totalTransactionDone Int              @default(0)
   totalnumberofSignin  Int              @default(0)
-  leaderboardId        Int              @unique
-  leaderboard          leaderboard?     @relation(fields: [leaderboardId], references: [id])
+  leaderboardId        Int                @default(0) // Removed @unique 
+  leaderboard          Leaderboard?     @relation(fields: [leaderboardId], references: [id])  
   transaction_Pass     Transaction_Pass[]
   loginhistory         LoginActivity[]
   loanMoney            Loan[]
   FraudUser            Fraud_People?
   donation             Donation[]
   blog                 blog?
-  referralId           Int          @default(0)
+  referralId           Int              @default(0)
   requestForMoney      MoneyRequest?
   sentRequests         SentRequest[]
   receivedRequests     Request[]
@@ -38,7 +40,13 @@ model User {
   totalRequests        Int              @default(0)
   requestFriends       RequestFriend[]
   Friend               Friend[]
-  CreditScore   Int     @default(0)
+  CreditScore          Int              @default(0)
+}
+model Leaderboard {
+  id                    Int    @id @default(autoincrement())
+  rank                  Int
+  totalTransactionMoney Int
+  users                 User[]
 }
 
 model Transaction_Pass {
@@ -154,12 +162,7 @@ model LoginActivity {
   user      User     @relation(fields: [userId], references: [id])
 }
 
-model leaderboard {
-  id                    Int    @id @default(autoincrement())
-  rank                  Int?
-  user                  User[]
-  totalTransactionMoney Int
-}
+
 
 model Admin {
   id          Int      @unique @default(autoincrement())    @id

@@ -113,7 +113,7 @@ router.get('/leaderboard', authorizeAdmin, async (req, res) => {
       try {
         const leaderboardData = await prisma.leaderboard.findMany({
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -132,7 +132,7 @@ router.get('/leaderboard', authorizeAdmin, async (req, res) => {
         const leaderboard = leaderboardData.map((entry, index) => ({
           rank: index + 1, // Assign rank based on position in sorted data
           totalTransactionMoney: entry.totalTransactionMoney,
-          users: entry.user.map((u) => ({
+          users: entry.users.map((u) => ({
             id: u.id,
             name: u.name,
             username: u.username,

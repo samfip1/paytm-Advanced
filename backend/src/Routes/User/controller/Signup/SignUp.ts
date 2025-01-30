@@ -63,13 +63,24 @@ const isValidUser = async (user: User) => {
         }
     }
 
+    // Ensure there is at least one leaderboard entry
+    let leaderboard = await prisma.leaderboard.findFirst();
+    if (!leaderboard) {
+        leaderboard = await prisma.leaderboard.create({
+            data: {
+                totalTransactionMoney: 0,
+                rank: 0,
+            },
+        });
+    }
+
     // Generate a unique user ID and hashed password
     const userId = Math.floor(Math.random() * 10000000);
     const hashedPassword = bcrypt.hashSync(password, 12);
     const referralId = Math.random() * 204482234;
     const randomMoney = Math.floor(Math.random() * (1000000 - 1000000 + 1)) + 1000000;
 
-    // Create the new user in the database first
+    // Create the new user and associate the leaderboardId
     const newUser = await prisma.user.create({
         data: {
             username,
@@ -80,7 +91,8 @@ const isValidUser = async (user: User) => {
             phone,
             userid: userId,
             referralId: referralId,
-            CreditScore: 0
+            CreditScore: 0,
+            leaderboardId: leaderboard.id // Use the existing leaderboard's ID
         },
     });
 
@@ -96,6 +108,8 @@ const isValidUser = async (user: User) => {
 
     return newUser;
 };
+
+
 
 
 // Signup Route
