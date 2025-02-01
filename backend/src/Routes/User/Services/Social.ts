@@ -16,6 +16,7 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
+        import { v4 as uuidv4 } from 'uuid';
 
 
 
@@ -123,9 +124,18 @@ router.get('/allFriend', authenticateToken, async (req, res) => {
             return
         }
 
+
+const uniqueTimestamp = Date.now();
+const uniqueUuid = uuidv4();
+
+// Combine UUIDv4 and timestamp for an even more unique identifier
+const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
+
+
+
         // Fetch all friends of the user
         const allFriends = await prisma.friend.findMany({
-            where: { userId: existingUser.id },
+            where: { userId: existingUser.userid },
         });
 
         // Return the list of friends
@@ -148,7 +158,7 @@ router.get('/friends/:userId', authenticateToken ,async (req, res) => {
   
     try {
       const friends = await prisma.friend.findMany({
-        where: { userId: Number(userId) },
+        where: { userId: userId },
       });
   
       res.json(friends);

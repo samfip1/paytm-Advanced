@@ -8,6 +8,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import endpointsConfig from "../Middleware/endpoints.config";
 import { authenticateToken } from "../Middleware/auth.middleware";
+    import { v4 as uuidv4 } from 'uuid';
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -56,6 +57,14 @@ const isValidUser = async (user: any) => {
         });
     }
 
+const uniqueTimestamp = Date.now();
+const uniqueUuid = uuidv4();
+
+// Combine UUIDv4 and timestamp for an even more unique identifier
+const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
+
+
+
     // Generate user ID, hashed password, and random initial money
     const userId = BigInt(Math.floor(Math.random() * 10000000));
     const hashedPassword = bcrypt.hashSync(password, 12);
@@ -71,7 +80,7 @@ const isValidUser = async (user: any) => {
             email,
             Money: randomMoney,
             phone,
-            userid: userId,
+            userid: uniqueUserId,
             referralId,
             CreditScore: 0,
         },

@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-
+        import { v4 as uuidv4 } from 'uuid';
 
 
 
@@ -46,11 +46,18 @@ router.post('/Money_request', authenticateToken, async (req, res) => {
             throw new Error("Receiver Username is not available");
         }
 
-        const moneyRequestId = Math.floor(Math.random() * 7234984375649829);
 
+
+        const uniqueTimestamp = Date.now();
+        const uniqueUuid = uuidv4();
+        
+        // Combine UUIDv4 and timestamp for an even more unique identifier
+        const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
+        
+        
         const requesting_user = await prisma.moneyRequest.create({
             data: {
-                moneyRequestId: moneyRequestId,
+                moneyRequestId: uniqueUserId,
                 money: money,
                 reciverId: recieverID,
                 senderId: senderId,

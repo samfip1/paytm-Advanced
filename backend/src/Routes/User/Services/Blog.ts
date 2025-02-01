@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-
+ import { v4 as uuidv4 } from 'uuid';
 
 
 
@@ -44,11 +44,19 @@ router.post('/blog/create_blog', authenticateToken ,async (req, res) => {
             throw new Error("PLease enter Content to post the information");            
         }
 
-        const contentId  = Math.random() * 52839759483475;
+       
+
+const uniqueTimestamp = Date.now();
+const uniqueUuid = uuidv4();
+
+// Combine UUIDv4 and timestamp for an even more unique identifier
+const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
+
+
         const blogUser = await prisma.blog.create({
             data: {
                 content: content,
-                contentId: contentId,
+                contentId: uniqueUserId,
                 numberOflike: 0,
                 username: username,
                 HeadingOfContent : HeadingOfContent

@@ -13,7 +13,7 @@ const app = express();
 const SECRET_KEY = endpointsConfig.SK;
 
 const router = express.Router();
-
+        import { v4 as uuidv4 } from 'uuid';
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
@@ -54,7 +54,15 @@ const isValidAdmin = async (adminuser: adminSignup) => {
             }
         }
 
-        const adminid = Math.random() *56856587 // Generate unique admin ID
+
+
+const uniqueTimestamp = Date.now();
+const uniqueUuid = uuidv4();
+
+// Combine UUIDv4 and timestamp for an even more unique identifier
+const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
+
+
         const hashPasswordAdmin = await bcrypt.hash(password, 12); // Use async hash
         const Newadmin = await prisma.admin.create({
             data: {
@@ -63,7 +71,7 @@ const isValidAdmin = async (adminuser: adminSignup) => {
                 name,
                 email,
                 phone,
-                adminId: adminid
+                adminId: uniqueUserId
             }
         });
 

@@ -18,10 +18,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 
-
-
-
-
+import { v4 as uuidv4 } from 'uuid';
 
 
 
@@ -32,7 +29,7 @@ interface User {
     email: string;
     Money: number;
     phone: bigint;
-    userid: number;
+    userid: string;
     transaction_Pin : number;
 }
 
@@ -44,7 +41,7 @@ const convertBigIntToString = (obj: any): any => {
 };
 
 // Function to validate user and create a new account
-const isValidUser = async (user: any) => {
+const isValidUser = async (user: User) => {
     const { username, password, name, email, phone, transaction_Pin } = user;
 
     // Check for duplicate email, username, or phone
@@ -66,34 +63,42 @@ const isValidUser = async (user: any) => {
         }
     }
 
-    // Ensure at least one leaderboard entry exists
-    let leaderboard = await prisma.leaderboard.findFirst();
-    if (!leaderboard) {
-        leaderboard = await prisma.leaderboard.create({
-            data: { totalTransactionMoney: 0, rank: 0 },
-        });
-    }
 
-    // Generate user ID, hashed password, and random initial money
-    const userId = BigInt(Math.floor(Math.random() * 10000000));
+
+// Generate a unique userid using a combination of UUID and timestamp
+const uniqueTimestamp = Date.now();
+const uniqueUuid = uuidv4();
+
+// Combine UUIDv4 and timestamp for an even more unique identifier
+const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
+
     const hashedPassword = bcrypt.hashSync(password, 12);
     const referralId = BigInt(Math.floor(Math.random() * 204482234));
     const randomMoney = BigInt(Math.floor(Math.random() * (875888565 - 7856 + 1)) + 18976009);
 
-    // Create the new user
-    const newUser = await prisma.user.create({
-        data: {
-            username,
-            password: hashedPassword,
-            name,
-            email,
-            Money: randomMoney,
-            phone,
-            userid: userId,
-            referralId,
-            CreditScore: 0,
-        },
+    // Ensure at least one leaderboard entry exists
+let leaderboard = await prisma.leaderboard.findFirst();
+if (!leaderboard) {
+    leaderboard = await prisma.leaderboard.create({
+        data: { totalTransactionMoney: 0, rank: 0 },
     });
+}
+
+// Create the new user with a valid leaderboard reference
+const newUser = await prisma.user.create({
+    data: {
+        username,
+        password: hashedPassword,
+        name,
+        email,
+        Money: randomMoney,
+        phone,
+        userid: uniqueUserId,
+        referralId,
+        CreditScore: 0,
+        leaderboard: { connect: { id: leaderboard.id } },  // Connecting the user to the leaderboard
+    },
+});
 
     // Insert transaction PIN
     await prisma.transaction_Pass.create({
@@ -105,6 +110,14 @@ const isValidUser = async (user: any) => {
 
     return newUser;
 };
+
+
+const uniqueTimestamp = Date.now();
+const uniqueUuid = uuidv4();
+
+// Combine UUIDv4 and timestamp for an even more unique identifier
+const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
+
 
 // Signup Route
 router.post("/", async (req, res) => {
@@ -121,9 +134,9 @@ router.post("/", async (req, res) => {
             password,
             name,
             email,
-            Money: BigInt(0),
+            Money: 0,
             phone: BigInt(phone),
-            userid: BigInt(0), // Temporary placeholder
+            userid:uniqueUserId , // Temporary placeholder
             transaction_Pin,
         });
 

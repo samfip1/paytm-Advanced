@@ -44,7 +44,7 @@ router.post('/apply_for_loan', authenticateToken, async (req, res) => {
             // Find the user by username
             const existingUser = await tx.user.findFirst({
                 where: { username },
-                select: { id: true, Money: true }
+                select: { id: true, Money: true , userid: true}
             });
 
             if (!existingUser) {
@@ -65,7 +65,7 @@ router.post('/apply_for_loan', authenticateToken, async (req, res) => {
                         time,
                         interest: rateOfInterest,
                         repaymentDate: new Date(Date.now() + time * 30 * 24 * 60 * 60 * 1000), // time in months
-                        userId: existingUser.id
+                        userId: existingUser.userid
                     }
                 });
 

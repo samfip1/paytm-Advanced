@@ -19,6 +19,7 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
+   import { v4 as uuidv4 } from 'uuid';
 
 
 
@@ -53,11 +54,17 @@ router.post('/Make_Donation', authenticateToken ,async (req, res ) => {
                 throw new Error("Sorry to say But you don't have much money");            
             }
 
-            const donationId = Math.random() * 892345792843572
+         
+const uniqueTimestamp = Date.now();
+const uniqueUuid = uuidv4();
+
+// Combine UUIDv4 and timestamp for an even more unique identifier
+const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
+
 
             const donation = await tsx.donation.create({
                 data: {
-                donationId: donationId,
+                donationId: uniqueUserId,
                 senderUsername: existingUser.username,
                 senderId: existingUser.userid,
                 DonatedMoney: DonatedMoney,

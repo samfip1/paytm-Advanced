@@ -15,7 +15,7 @@ interface AuthenticatedRequest extends Request {
   user?: {
     id: number;
     username: string;
-    adminId: BigInt;
+    adminId: string;
   };
 }
 

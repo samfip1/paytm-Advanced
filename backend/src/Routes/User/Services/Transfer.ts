@@ -17,6 +17,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 
+import { v4 as uuidv4 } from 'uuid';
+
 
 
 
@@ -27,7 +29,13 @@ app.use(cookieParser());
 
 
 async function transfer(senderusername: string, recieveusernmae: string, amount: number, transaction_Pin: bigint, comment: string): Promise<void> {
-    try {
+  const uniqueTimestamp = Date.now();
+const uniqueUuid = uuidv4();
+
+// Combine UUIDv4 and timestamp for an even more unique identifier
+const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
+
+  try {
         await prisma.$transaction(async (tx) => {
             // Fetch sender's account balance before updating
 
@@ -96,8 +104,13 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
             
             console.log(`Sender's new balance: ${updatedSender.Money}`);
 
-            const transactionid = Math.random() * 989247568973999
-
+            const uniqueTimestamp = Date.now();
+            const uniqueUuid = uuidv4();
+            
+            // Combine UUIDv4 and timestamp for an even more unique identifier
+            const uniqueUserIdTra = `${uniqueUuid}-${uniqueTimestamp}`;
+            
+            
 
             // Increment amount in recipient's account
             const recipient = await tx.user.update({
@@ -120,8 +133,9 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
                     senderUsername: senderusername,
                     receiverUsername: recieveusernmae,
                     amount: amount,
-                    trasanctionId: transactionid,
-                    Comment: comment
+                    trasanctionId: uniqueUserId,
+                    Comment: comment,
+                    transactionid: uniqueUserIdTra
                 }
             })
             console.log(payment);
