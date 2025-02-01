@@ -64,22 +64,16 @@ router.post('/blog/create_blog', authenticateToken ,async (req, res) => {
 
 
 router.get('/blog', authenticateToken, async (req, res) => {
-    const { userid } = req.body;
+    const { username } = req.body;
 
 
-    if (!userid) {
-        res.status(400).json({ error: 'userid is required' });
+    if (!username) {
+        res.status(400).json({ error: 'username is required' });
         return;
     }
 
     try {
-        let blogs = await prisma.blog.findMany({
-            where: {
-                contentId: {
-                    not: Number(userid), // Exclude blogs where `contentId` matches the user's ID.
-                },
-            },
-        });
+        let blogs = await prisma.blog.findMany({});
 
         // Shuffle the blogs array
         blogs = blogs.sort(() => Math.random() - 0.5);

@@ -91,10 +91,11 @@ async function betgames(money: Money) {
 
 router.post('/mini_games', authenticateToken, async (req, res) => {
 
-    const {userId} = req.body
+    const {username} = req.body
     const { bet_number_choice, input_number } = req.body;
 
-    if(!userId) throw new Error("Please Enter Username");    
+
+    if(!username) throw new Error("Please Enter Username");    
     try {
 
         if (bet_number_choice === undefined || input_number === undefined) {
@@ -104,7 +105,7 @@ router.post('/mini_games', authenticateToken, async (req, res) => {
 
         const gamblingUser = await prisma.user.findFirst({
             where: {
-                userid: userId
+                username: username
             },
             select: {
                 Money: true
@@ -124,7 +125,7 @@ router.post('/mini_games', authenticateToken, async (req, res) => {
             try {
                 const betmoneyuser = await atx.user.update({
                     where: {
-                        userid: userId
+                        username: username
                     },
                     data : {
                         Money: {
@@ -152,7 +153,7 @@ router.post('/mini_games', authenticateToken, async (req, res) => {
             try {
                 const addmoneyUser = await atx.user.update({
                     where: {
-                        userid: userId
+                        username: username
                     },
                     data :{
                         Money: {

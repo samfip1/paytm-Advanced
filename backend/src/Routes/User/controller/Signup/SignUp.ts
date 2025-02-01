@@ -77,8 +77,8 @@ const isValidUser = async (user: User) => {
     // Generate a unique user ID and hashed password
     const userId = Math.floor(Math.random() * 10000000);
     const hashedPassword = bcrypt.hashSync(password, 12);
-    const referralId = Math.random() * 204482234;
-    const randomMoney = Math.floor(Math.random() * (1000000 - 1000000 + 1)) + 1000000;
+    const referralId = Math.floor(Math.random() * 204482234)
+    const randomMoney = Math.floor(Math.random() * (875888565 - 7856 + 1)) + 18976009;
 
     // Create the new user and associate the leaderboardId
     const newUser = await prisma.user.create({
@@ -105,6 +105,7 @@ const isValidUser = async (user: User) => {
             transaction_Pin: transaction_Pin
         }
     });
+
 
     return newUser;
 };

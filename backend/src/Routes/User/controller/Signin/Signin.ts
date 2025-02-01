@@ -35,6 +35,7 @@ interface signinUser {
 // Function to sign in the user
 const signinUser = async (signinUser: signinUser) => {
     const { username, password, reffarelId } = signinUser;
+    
     const existingUser = await prisma.user.findFirst({ where: { username } });
 
     if (!existingUser || !bcrypt.compareSync(password, existingUser.password)) {
@@ -72,6 +73,7 @@ const signinUser = async (signinUser: signinUser) => {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Something went wrong";
         console.log(errorMessage)
+        
     }
     return existingUser;
 };
@@ -79,7 +81,7 @@ const signinUser = async (signinUser: signinUser) => {
 
 
 // Signin Route
-router.post("/SignIn", async (req, res) => {
+router.post("/", async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -111,16 +113,18 @@ router.post("/SignIn", async (req, res) => {
 
 
         let rateofInterest: number = 0;
-        if(existingUser.totalnumberofSignin == 10) {
+        const fi = existingUser.totalnumberofSignin % 18
+        if( fi == 0) {
             rateofInterest = existingUser.Money * 0.04;
-            existingUser.totalnumberofSignin = 0;
         }
         await prisma.user.update({
             where: {
                 username : username
             },
             data: {
-                Money: existingUser.Money + rateofInterest
+                Money: {
+                    increment: rateofInterest
+                }
             }
         })
         res.cookie("token", token, { httpOnly: true });
@@ -130,7 +134,9 @@ router.post("/SignIn", async (req, res) => {
                 id: existingUser.id,
                 username: existingUser.username,
                 token: token,
-                userid: existingUser.userid
+                userid: existingUser.userid,
+                Money : existingUser.Money,
+                signin: existingUser.totalnumberofSignin
                 }
         });
     } catch (error) {
@@ -141,7 +147,6 @@ router.post("/SignIn", async (req, res) => {
         });
     }
 });
-
 
 
 

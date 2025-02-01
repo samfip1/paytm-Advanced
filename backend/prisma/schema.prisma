@@ -24,7 +24,7 @@ model User {
   userid               Int              @unique @default(0)
   totalTransactionDone Int              @default(0)
   totalnumberofSignin  Int              @default(0)
-  leaderboardId        Int                @default(0) // Removed @unique 
+  leaderboardId        Int               
   leaderboard          Leaderboard?     @relation(fields: [leaderboardId], references: [id])  
   transaction_Pass     Transaction_Pass[]
   loginhistory         LoginActivity[]

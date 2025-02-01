@@ -33,21 +33,31 @@ app.use(cookieParser());
 
 
 router.get("/balance", authenticateToken, async (req, res) => {
-    const userid = (req as AuthenticatedRequest).user;
-    try {
-        const user = await prisma.user.findUnique({ where: { id: userid.id } });
 
-        if (!user) {
-            throw new Error("User not found");
+    const {username} = req.body
+    if(!username) {
+        throw new Error("Please Enter Username");        
+    }
+
+    try {
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                username : username
+            },
+            select :{
+                Money: true
+            }
+        })
+
+        if (!existingUser) {
+            throw new Error("Username does not Exist");            
         }
 
-        res.status(200).json({ balance: user.Money });
+        res.json({
+            message : existingUser.Money
+        })
     } catch (error) {
-        const errorMessage =
-            error instanceof Error ? error.message : "Something went wrong";
-        res.status(500).json({
-            message: errorMessage || "Something went wrong",
-        });
+        
     }
 });
 
