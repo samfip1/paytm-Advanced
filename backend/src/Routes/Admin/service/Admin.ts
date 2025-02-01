@@ -110,48 +110,50 @@ router.get('/user_transaction',  authorizeAdmin,async (req, res) => {
 
   
 router.get('/leaderboard', authorizeAdmin, async (req, res) => {
-      try {
+    try {
         const leaderboardData = await prisma.leaderboard.findMany({
-          include: {
-            users: {
-              select: {
-                id: true,
-                name: true,
-                username: true,
-                email: true,
-                Money: true,
-                totalTransactionDone: true,
-              },
+            include: {
+                users: {
+                    select: {
+                        id: true,
+                        name: true,
+                        username: true,
+                        email: true,
+                        Money: true,
+                        totalTransactionDone: true,
+                    },
+                    orderBy: { Money: 'desc' } // Sort users by money
+                },
             },
-          },
-          orderBy: {
-            totalTransactionMoney: 'desc', // Sort by total transaction money
-          },
+            orderBy: {
+                totalTransactionMoney: 'desc', // Sort leaderboard by total money
+            },
         });
 
+        // Convert BigInt to String to prevent JSON errors
+        const convertBigIntToString = (obj: any): any =>
+            JSON.parse(JSON.stringify(obj, (_, value) => (typeof value === "bigint" ? value.toString() : value)));
+
         const leaderboard = leaderboardData.map((entry, index) => ({
-          rank: index + 1, // Assign rank based on position in sorted data
-          totalTransactionMoney: entry.totalTransactionMoney,
-          users: entry.users.map((u) => ({
-            id: u.id,
-            name: u.name,
-            username: u.username,
-            email: u.email,
-            Money: u.Money,
-            totalTransactionDone: u.totalTransactionDone,
-          })),
+            rank: index + 1, // Assign rank based on sorted position
+            totalTransactionMoney: convertBigIntToString(entry.totalTransactionMoney),
+            users: entry.users.map((u) => ({
+                id: u.id,
+                name: u.name,
+                username: u.username,
+                email: u.email,
+                Money: convertBigIntToString(u.Money),
+                totalTransactionDone: u.totalTransactionDone,
+            })),
         }));
-  
+
         res.status(200).json({ leaderboard });
-        return
-      } catch (error) {
+    } catch (error) {
         console.error('Error fetching leaderboard:', error);
         res.status(500).json({ error: 'Failed to fetch leaderboard data.' });
-        return
-      }
     }
-);
-  
+});
+
 
 router.get('/user_list',authorizeAdmin ,async (req , res) => {
     try {
@@ -169,7 +171,6 @@ router.get('/user_list',authorizeAdmin ,async (req , res) => {
                 userid: true,
                 totalTransactionDone: true,
                 totalnumberofSignin: true,
-                leaderboardId: true,
                 createdAt: true,
                 updatedAt: true
             }

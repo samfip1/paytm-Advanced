@@ -52,7 +52,7 @@ router.post('/apply_for_loan', authenticateToken, async (req, res) => {
             }
 
             // Apply business logic to calculate the loan limit (here it's a fixed limit)
-            const maxLoanLimit = existingUser.Money * 2; // Maximum loan is double the user's current money
+            const maxLoanLimit = Number(existingUser.Money) * 2; // Maximum loan is double the user's current money
             const rateOfInterest = 9.86 - (Math.random() * 0.02 * time); // Interest rate decreases with time
 
             if (loan_Money <= maxLoanLimit) {
@@ -106,7 +106,7 @@ cron.schedule('0 0 * * *', async () => {
 
             await prisma.$transaction(async (tx) => {
                 const user = await tx.user.findFirst({
-                    where: { id: loan.userId }
+                    where: { userid: loan.userId }
                 });
 
                 if (!user) {

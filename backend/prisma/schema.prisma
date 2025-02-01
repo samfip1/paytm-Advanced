@@ -17,22 +17,21 @@ model User {
   username             String           @unique
   password             String
   email                String           @unique
-  Money                Int              @default(0)
+  Money                BigInt              @default(0)
   createdAt            DateTime         @default(now())
-  phone                Int              @unique
+  phone                BigInt              @unique
   updatedAt            DateTime         @updatedAt
-  userid               Int              @unique @default(0)
+  userid               BigInt              @unique @default(0)
   totalTransactionDone Int              @default(0)
-  totalnumberofSignin  Int              @default(0)
-  leaderboardId        Int               
-  leaderboard          Leaderboard?     @relation(fields: [leaderboardId], references: [id])  
+  totalnumberofSignin  Int              @default(0)          
+  leaderboard          Leaderboard     @relation(fields: [id], references: [id])  
   transaction_Pass     Transaction_Pass[]
   loginhistory         LoginActivity[]
   loanMoney            Loan[]
   FraudUser            Fraud_People?
   donation             Donation[]
   blog                 blog?
-  referralId           Int              @default(0)
+  referralId           BigInt              @default(0)
   requestForMoney      MoneyRequest?
   sentRequests         SentRequest[]
   receivedRequests     Request[]
@@ -51,9 +50,9 @@ model Leaderboard {
 
 model Transaction_Pass {
   id    Int     @unique       @id   @default(autoincrement())
-  userId  Int
+  userId  BigInt
   user  User  @relation(fields: [userId], references: [userid])
-  transaction_Pin     Int    @unique
+  transaction_Pin     BigInt    
 }
 model Friend {
   id        Int      @id @default(autoincrement())
@@ -73,8 +72,8 @@ model SentRequest {
 }
 
 model RequestFriend {
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [userid], onDelete: Cascade)
+  userId    BigInt      @unique
   createdAt DateTime @default(now())
   username  String   @unique
 }
@@ -82,20 +81,20 @@ model RequestFriend {
 model MoneyRequest {
   id             Int    @id @default(autoincrement())
   moneyrequest   User   @relation(fields: [moneyRequestId], references: [userid])
-  moneyRequestId Int    @unique
-  reciverId      Int
-  senderId       Int
+  moneyRequestId BigInt    @unique
+  reciverId      BigInt
+  senderId       BigInt
   message        String
-  money          Int
+  money          BigInt
   status         String @default("pending") // pending, accepted, rejected
 }
 
 model Donation {
   id             Int      @default(autoincrement())
-  donationId     Int
-  senderId       Int      @unique
+  donationId     BigInt
+  senderId       BigInt      @unique
   senderUsername String
-  DonatedMoney   Int
+  DonatedMoney   BigInt
   donation       User     @relation(fields: [senderId], references: [userid])
   message        String?
   donatedAt      DateTime @default(now())
@@ -107,21 +106,21 @@ model blog {
   blog             User     @relation(fields: [contentId], references: [userid])
   username         String
   HeadingOfContent String
-  contentId        Int      @unique
+  contentId        BigInt      @unique
   numberOflike     Int
   CreatedAt        DateTime @default(now())
 }
 
 model Transaction {
   id               Int      @unique @default(autoincrement())
-  trasanctionId    Int
-  senderId         Int
-  receiverId       Int
+  trasanctionId    BigInt
+  senderId         BigInt
+  receiverId       BigInt
   senderUsername   String
   receiverUsername String
-  amount           Int
+  amount           BigInt
   TransactionAt    DateTime @default(now())
-  transactionid    Int      @unique @default(0)
+  transactionid    BigInt      @unique @default(0)
   Comment          String?
 }
 
@@ -129,12 +128,12 @@ model Request {
   id                  Int      @id @default(autoincrement())
   requester_username  String   @unique
   requesting_username String   @unique
-  request_money       Int
-  requestid           Int      @unique
+  request_money       BigInt
+  requestid           BigInt      @unique
   reason              String
   RequestCreatedAt    DateTime @default(now())
-  receiver            User     @relation(fields: [receiverId], references: [id])
-  receiverId          Int
+  receiver            User     @relation(fields: [receiverId], references: [userid])
+  receiverId          BigInt
 }
 
 model Loan {
@@ -145,8 +144,8 @@ model Loan {
   interest      Decimal
   repaymentDate DateTime
   status        String   @default("pending") // pending, repaid, defaulted
-  userId        Int
-  user          User     @relation(fields: [userId], references: [id])
+  userId        BigInt
+  user          User     @relation(fields: [userId], references: [userid])
 }
 
 
@@ -154,12 +153,12 @@ model Loan {
 // left to implement
 model LoginActivity {
   id        Int      @id @default(autoincrement())
-  userId    Int
+  userId    BigInt
   ipAddress String
   device    String
   browser   String
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [userid])
 }
 
 
@@ -170,8 +169,8 @@ model Admin {
   username    String   @unique
   password    String
   email       String   @unique
-  adminId     Int      @default(0)
-  phone       Int      @unique
+  adminId     BigInt      @default(0)
+  phone       BigInt      @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   totalsignin Int      @default(0)
@@ -180,13 +179,13 @@ model Admin {
 model Fraud_People {
   id                   Int      @unique @default(autoincrement())
   user                 User     @relation(fields: [fraud_people_userid], references: [userid])
-  fraud_people_userid  Int      @unique
+  fraud_people_userid  BigInt      @unique
   reason               String
-  Total_Money          Int
+  Total_Money          BigInt
   username             String   @unique
   createdAt            DateTime @default(now())
   email                String   @unique
-  phone                Int      @unique
+  phone                BigInt      @unique
   totalnumberofSignin  Int
   totalTransactionDone Int
 }

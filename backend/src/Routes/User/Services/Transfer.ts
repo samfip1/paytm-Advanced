@@ -26,7 +26,7 @@ app.use(cookieParser());
 
 
 
-async function transfer(senderusername: string, recieveusernmae: string, amount: number, transaction_Pin: number, comment: string): Promise<void> {
+async function transfer(senderusername: string, recieveusernmae: string, amount: number, transaction_Pin: bigint, comment: string): Promise<void> {
     try {
         await prisma.$transaction(async (tx) => {
             // Fetch sender's account balance before updating

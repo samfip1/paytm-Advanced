@@ -24,7 +24,7 @@ interface adminSignup {
     password: string;
     name: string;
     email: string;
-    phone: number;
+    phone: bigint;
 }
 
 // Function to validate admin
