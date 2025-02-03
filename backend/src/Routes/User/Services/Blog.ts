@@ -24,16 +24,16 @@ app.use(cookieParser());
 
 router.post('/blog/create_blog', authenticateToken ,async (req, res) => {
     
-    const {userid, content, username, HeadingOfContent} = req.body;
+    const { content, username, HeadingOfContent} = req.body;
 
-    if (!userid || !content || !username || !HeadingOfContent) {
+    if ( !content || !username || !HeadingOfContent) {
         res.status(400).json({ error: "All the information is not provided" });
         return
     }
     try {
         const existingUser = await prisma.user.findFirst({
             where: {
-                userid : userid
+                username : username
             }
         })
         if(!existingUser) {

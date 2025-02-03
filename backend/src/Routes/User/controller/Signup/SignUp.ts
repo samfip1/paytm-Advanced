@@ -20,6 +20,12 @@ app.use(cookieParser());
 
 import { v4 as uuidv4 } from 'uuid';
 
+// Generate a unique userid using a combination of UUID and timestamp
+const uniqueTimestamp = Date.now();
+const uniqueUuid = uuidv4();
+
+// Combine UUIDv4 and timestamp for an even more unique identifier
+const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
 
 
 interface User {
@@ -65,24 +71,18 @@ const isValidUser = async (user: User) => {
 
 
 
-// Generate a unique userid using a combination of UUID and timestamp
-const uniqueTimestamp = Date.now();
-const uniqueUuid = uuidv4();
-
-// Combine UUIDv4 and timestamp for an even more unique identifier
-const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
 
     const hashedPassword = bcrypt.hashSync(password, 12);
     const referralId = BigInt(Math.floor(Math.random() * 204482234));
     const randomMoney = BigInt(Math.floor(Math.random() * (875888565 - 7856 + 1)) + 18976009);
 
     // Ensure at least one leaderboard entry exists
-let leaderboard = await prisma.leaderboard.findFirst();
-if (!leaderboard) {
-    leaderboard = await prisma.leaderboard.create({
-        data: { totalTransactionMoney: 0, rank: 0 },
-    });
-}
+    let leaderboard = await prisma.leaderboard.findFirst();
+    if (!leaderboard) {
+        leaderboard = await prisma.leaderboard.create({
+            data: { totalTransactionMoney: 0, rank: 0 },
+        });
+    }
 
 // Create the new user with a valid leaderboard reference
 const newUser = await prisma.user.create({
@@ -96,9 +96,10 @@ const newUser = await prisma.user.create({
         userid: uniqueUserId,
         referralId,
         CreditScore: 0,
-        leaderboard: { connect: { id: leaderboard.id } },  // Connecting the user to the leaderboard
+        leaderboardId: leaderboard.id, // Correctly linking to the leaderboard
     },
 });
+
 
     // Insert transaction PIN
     await prisma.transaction_Pass.create({
@@ -110,13 +111,6 @@ const newUser = await prisma.user.create({
 
     return newUser;
 };
-
-
-const uniqueTimestamp = Date.now();
-const uniqueUuid = uuidv4();
-
-// Combine UUIDv4 and timestamp for an even more unique identifier
-const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
 
 
 // Signup Route

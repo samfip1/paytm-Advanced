@@ -1,191 +1,187 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
-
-
-
-
 
 model User {
-  id                   Int              @id @default(autoincrement())
-  name                 String
-  username             String           @unique
-  password             String
-  email                String           @unique
-  Money                BigInt              @default(0)
-  createdAt            DateTime         @default(now())
-  phone                BigInt              @unique
-  updatedAt            DateTime         @updatedAt
-  userid               String              @unique 
-  totalTransactionDone Int              @default(0)
-  totalnumberofSignin  Int              @default(0)          
-  leaderboard          Leaderboard     @relation(fields: [id], references: [id])  
-  transaction_Pass     Transaction_Pass[]
-  loginhistory         LoginActivity[]
-  loanMoney            Loan[]
-  FraudUser            Fraud_People?
-  donation             Donation[]
-  blog                 blog?
-  referralId           BigInt              @default(0)
-  requestForMoney      MoneyRequest?
-  sentRequests         SentRequest[]
-  receivedRequests     Request[]
-  friendsList          Friend[]         @relation("FriendUser") 
-  totalRequests        Int              @default(0)
-  requestFriends       RequestFriend[]
-  Friend               Friend[]
-  CreditScore          Int              @default(0)
+    id                   Int                @id @unique @default(autoincrement())
+    name                 String
+    username             String             @unique
+    password             String
+    email                String             @unique
+    Money                BigInt             @default(0)
+    createdAt            DateTime           @default(now())
+    phone                BigInt             @unique
+    updatedAt            DateTime           @updatedAt
+    userid               String             @unique
+    totalTransactionDone Int                @default(0)
+    totalnumberofSignin  Int                @default(0)
+    leaderboardId        Int
+    leaderboard          Leaderboard        @relation(fields: [leaderboardId], references: [id])
+    transaction_Pass     Transaction_Pass[]
+    loginhistory         LoginActivity[]
+    loanMoney            Loan[]
+    FraudUser            Fraud_People?
+    donation             Donation[]
+    blog                 blog[]
+    referralId           BigInt             @default(0)
+    requestForMoney      MoneyRequest?
+    sentRequests         SentRequest[]
+    receivedRequests     Request[]
+    friendsList          Friend[]           @relation("FriendUser")
+    totalRequests        Int                @default(0)
+    requestFriends       RequestFriend[]
+    Friend               Friend[]
+    CreditScore          Int                @default(0)
 }
-model Leaderboard {
-  id                    Int    @id @default(autoincrement())
-  rank                  Int
-  totalTransactionMoney Int
-  users                 User[]
+model Transaction_Pass {
+    id              Int    @id @unique @default(autoincrement())
+    userId          String @unique
+    user            User   @relation(fields: [userId], references: [userid])
+    transaction_Pin BigInt
+}
+model blog {
+    id               Int      @unique @default(autoincrement())
+    content          String
+    blog             User     @relation(fields: [contentId], references: [userid])
+    username         String   @unique
+    HeadingOfContent String
+    contentId        String   @unique
+    numberOflike     Int
+    CreatedAt        DateTime @default(now())
 }
 
-model Transaction_Pass {
-  id    Int     @unique       @id   @default(autoincrement())
-  userId  String
-  user  User  @relation(fields: [userId], references: [userid])
-  transaction_Pin     BigInt    
+model Leaderboard {
+    id                    Int    @id @unique @default(autoincrement())
+    rank                  Int    @unique
+    totalTransactionMoney Int
+    users                 User[]
 }
+
+
+
 model Friend {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [userid])
-  userId    String
-  friend    User     @relation("FriendUser", fields: [friendId], references: [userid]) 
-  friendId  String 
-  createdAt DateTime @default(now())
+    id        Int      @id @default(autoincrement())
+    user      User     @relation(fields: [userId], references: [userid])
+    userId    String   @unique
+    friend    User     @relation("FriendUser", fields: [friendId], references: [userid])
+    friendId  String   @unique
+    createdAt DateTime @default(now())
 }
 
 model SentRequest {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [userid])
-  createdAt DateTime @default(now())
-  userId    String
-  username  String   @default("")
+    id        Int      @id @default(autoincrement())
+    user      User     @relation(fields: [userId], references: [userid])
+    createdAt DateTime @default(now())
+    userId    String   @unique
+    username  String   @default("")
 }
 
 model RequestFriend {
-  user      User     @relation(fields: [userId], references: [userid], onDelete: Cascade)
-  userId    String      @unique
-  createdAt DateTime @default(now())
-  username  String   @unique
+    user      User     @relation(fields: [userId], references: [userid], onDelete: Cascade)
+    userId    String   @unique
+    createdAt DateTime @default(now())
+    username  String   @unique
 }
 
 model MoneyRequest {
-  id             Int    @id @default(autoincrement())
-  moneyrequest   User   @relation(fields: [moneyRequestId], references: [userid])
-  moneyRequestId String    @unique
-  reciverId      String
-  senderId       String
-  message        String
-  money          BigInt
-  status         String @default("pending") // pending, accepted, rejected
+    id             Int    @id @default(autoincrement())
+    moneyrequest   User   @relation(fields: [moneyRequestId], references: [userid])
+    moneyRequestId String @unique
+    reciverId      String @unique
+    senderId       String @unique
+    message        String
+    money          BigInt
+    status         String @default("pending") // pending, accepted, rejected
 }
 
 model Donation {
-  id             Int      @default(autoincrement())
-  donationId     String
-  senderId       String      @unique
-  senderUsername String
-  DonatedMoney   BigInt
-  donation       User     @relation(fields: [senderId], references: [userid])
-  message        String?
-  donatedAt      DateTime @default(now())
+    id             Int      @default(autoincrement())
+    donationId     String   @unique
+    senderId       String   @unique
+    senderUsername String   @unique
+    DonatedMoney   BigInt
+    donation       User     @relation(fields: [senderId], references: [userid])
+    message        String?
+    donatedAt      DateTime @default(now())
 }
 
-model blog {
-  id               Int      @unique @default(autoincrement())
-  content          String
-  blog             User     @relation(fields: [contentId], references: [userid])
-  username         String
-  HeadingOfContent String
-  contentId        String      @unique
-  numberOflike     Int
-  CreatedAt        DateTime @default(now())
-}
 
 model Transaction {
-  id               Int      @unique @default(autoincrement())
-  trasanctionId    String
-  senderId         String
-  receiverId       String
-  senderUsername   String
-  receiverUsername String
-  amount           BigInt
-  TransactionAt    DateTime @default(now())
-  transactionid    String      @unique 
-  Comment          String?
+    id               Int      @unique @default(autoincrement())
+    trasanctionId    String   @unique
+    senderId         String   @unique
+    receiverId       String   @unique
+    senderUsername   String   @unique
+    receiverUsername String   @unique
+    amount           BigInt
+    TransactionAt    DateTime @default(now())
+    transactionid    String   @unique
+    Comment          String?
 }
 
 model Request {
-  id                  Int      @id @default(autoincrement())
-  requester_username  String   @unique
-  requesting_username String   @unique
-  request_money       BigInt
-  requestid           String      @unique
-  reason              String
-  RequestCreatedAt    DateTime @default(now())
-  receiver            User     @relation(fields: [receiverId], references: [userid])
-  receiverId          String
+    id                  Int      @id @default(autoincrement())
+    requester_username  String   @unique
+    requesting_username String   @unique
+    request_money       BigInt
+    requestid           String   @unique
+    reason              String
+    RequestCreatedAt    DateTime @default(now())
+    receiver            User     @relation(fields: [receiverId], references: [userid])
+    receiverId          String   @unique
 }
 
 model Loan {
-  id            Int      @id @default(autoincrement())
-  loanId        String  @unique
-  loanMoney     Decimal
-  time          Int
-  interest      Decimal
-  repaymentDate DateTime
-  status        String   @default("pending") // pending, repaid, defaulted
-  userId        String
-  user          User     @relation(fields: [userId], references: [userid])
+    id            Int      @id @default(autoincrement())
+    loanId        String   @unique
+    loanMoney     Decimal
+    time          Int
+    interest      Decimal
+    repaymentDate DateTime
+    status        String   @default("pending") // pending, repaid, defaulted
+    userId        String   @unique
+    user          User     @relation(fields: [userId], references: [userid])
 }
-
-
 
 // left to implement
 model LoginActivity {
-  id        Int      @id @default(autoincrement())
-  userId    String
-  ipAddress String
-  device    String
-  browser   String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [userid])
+    id        Int      @id @default(autoincrement())
+    userId    String   @unique
+    ipAddress String
+    device    String
+    browser   String
+    createdAt DateTime @default(now())
+    user      User     @relation(fields: [userId], references: [userid])
 }
 
-
-
 model Admin {
-  id          Int      @unique @default(autoincrement())    @id
-  name        String
-  username    String   @unique
-  password    String
-  email       String   @unique
-  adminId     String    
-  phone       BigInt      @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  totalsignin Int      @default(0)
+    id          Int      @id @unique @default(autoincrement())
+    name        String
+    username    String   @unique
+    password    String
+    email       String   @unique
+    adminId     String   @unique
+    phone       BigInt   @unique
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    totalsignin Int      @default(0)
 }
 
 model Fraud_People {
-  id                   Int      @unique @default(autoincrement())
-  user                 User     @relation(fields: [fraud_people_userid], references: [userid])
-  fraud_people_userid  String      @unique
-  reason               String
-  Total_Money          BigInt
-  username             String   @unique
-  createdAt            DateTime @default(now())
-  email                String   @unique
-  phone                BigInt      @unique
-  totalnumberofSignin  Int
-  totalTransactionDone Int
+    id                   Int      @unique @default(autoincrement())
+    user                 User     @relation(fields: [fraud_people_userid], references: [userid])
+    fraud_people_userid  String   @unique
+    reason               String
+    Total_Money          BigInt   @unique
+    username             String   @unique
+    createdAt            DateTime @default(now())
+    email                String   @unique
+    phone                BigInt   @unique
+    totalnumberofSignin  Int
+    totalTransactionDone Int
 }

@@ -19,7 +19,11 @@ app.use(cookieParser());
 
 
 
-
+const convertBigIntToString = (obj: any): any => {
+    return JSON.parse(
+        JSON.stringify(obj, (_, value) => (typeof value === "bigint" ? value.toString() : value))
+    );
+};
 
 
 
@@ -130,14 +134,7 @@ router.post("/", async (req, res) => {
         res.cookie("token", token, { httpOnly: true });
         res.status(200).json({
             message: "Successfully logged in",
-            user: {
-                id: existingUser.id,
-                username: existingUser.username,
-                token: token,
-                userid: existingUser.userid,
-                Money : existingUser.Money,
-                signin: existingUser.totalnumberofSignin
-                }
+            user : convertBigIntToString(existingUser)
         });
     } catch (error) {
         const errorMessage =
