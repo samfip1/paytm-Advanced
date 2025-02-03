@@ -18,7 +18,6 @@ app.use(cookieParser());
 
 
 
-
 /**
  * Send Friend Request
  */

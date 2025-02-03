@@ -22,21 +22,21 @@ app.use(cookieParser());
 
 
 router.post('/Money_request', authenticateToken, async (req, res) => {
-    const { recieverID, senderId, money, message } = req.body;
+    const { receiverUsername, senderusername, money, message } = req.body;
 
-    if (!recieverID || !senderId || !money || !message) {
+    if (!receiverUsername || !senderusername || !money || !message) {
         res.status(400).json({ error: "All the information is not provided" });
         return
     }
     try {
         const moneytakerusername = await prisma.user.findFirst({
-            where: { userid: senderId },
-            select: { Money: true },
+            where: { username: senderusername },
+            select: { Money: true, userid: true },
         });
 
         const moneysenderusername = await prisma.user.findFirst({
-            where: { userid: recieverID },
-            select: { Money: true, username: true },
+            where: { username: receiverUsername },
+            select: { Money: true, username: true , userid: true },
         });
 
         if (!moneysenderusername) {
@@ -59,8 +59,8 @@ router.post('/Money_request', authenticateToken, async (req, res) => {
             data: {
                 moneyRequestId: uniqueUserId,
                 money: money,
-                reciverId: recieverID,
-                senderId: senderId,
+                reciverId: moneysenderusername.userid,
+                senderId: moneytakerusername.userid,
                 message: message,
                 status: "Pending",
             },

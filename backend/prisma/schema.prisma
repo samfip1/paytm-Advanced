@@ -38,6 +38,16 @@ model User {
     Friend               Friend[]
     CreditScore          Int                @default(0)
 }
+model MoneyRequest {
+    id             Int    @id @default(autoincrement())
+    moneyrequest   User   @relation(fields: [moneyRequestId], references: [userid])
+    moneyRequestId String @unique
+    reciverId      String @unique
+    senderId       String @unique
+    message        String
+    money          BigInt
+    status         String @default("pending") // pending, accepted, rejected
+}
 
 model RequestFriend {
     user      User     @relation(fields: [userId], references: [userid], onDelete: Cascade)
@@ -93,16 +103,6 @@ model Leaderboard {
 
 
 
-model MoneyRequest {
-    id             Int    @id @default(autoincrement())
-    moneyrequest   User   @relation(fields: [moneyRequestId], references: [userid])
-    moneyRequestId String @unique
-    reciverId      String @unique
-    senderId       String @unique
-    message        String
-    money          BigInt
-    status         String @default("pending") // pending, accepted, rejected
-}
 
 model Donation {
     id             Int      @default(autoincrement())

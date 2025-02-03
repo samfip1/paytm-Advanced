@@ -119,7 +119,7 @@ router.post("/", async (req, res) => {
         let rateofInterest = 0;
         const fi = existingUser.totalnumberofSignin % 18
         if( fi == 0) {
-            rateofInterest = Number(existingUser.Money) * 0.04;
+            rateofInterest = Math.floor(Number(existingUser.Money) * 0.04);
         }
         await prisma.user.update({
             where: {
