@@ -116,7 +116,7 @@ router.post("/", async (req, res) => {
         })
 
 
-        let rateofInterest: number = 0;
+        let rateofInterest = 0;
         const fi = existingUser.totalnumberofSignin % 18
         if( fi == 0) {
             rateofInterest = Number(existingUser.Money) * 0.04;

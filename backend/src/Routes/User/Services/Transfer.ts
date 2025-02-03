@@ -28,7 +28,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 
 
-async function transfer(senderusername: string, recieveusernmae: string, amount: number, transaction_Pin: bigint, comment: string): Promise<void> {
+async function transfer(senderusername: string, recieveusernmae: string, amount: number, transaction_Pin: number, comment: string): Promise<void> {
   const uniqueTimestamp = Date.now();
 const uniqueUuid = uuidv4();
 
@@ -44,19 +44,20 @@ const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
             where: { username: senderusername },
             select: {
                 Money: true,
-                userid : true,
+                username : true,
                 totalTransactionDone: true,
-                transaction_Pass: true
+                transaction_Pass: true,
+                userid: true
                 },
             });
 
             if (!sender) {
                 throw new Error(`Sender with username ${senderusername} does not exist.`);
             }
-            if (!sender.transaction_Pass.some(tp => tp.transaction_Pin === transaction_Pin)) {
+            if (!sender.transaction_Pass.some(tp => Number(tp.transaction_Pin) === transaction_Pin)) {
                 throw new Error('Your Transaction pin is Incorrect');
             }
-            const senderId = sender.userid;
+
 
 
     
@@ -75,6 +76,7 @@ const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
                 throw new Error(`${senderusername} doesn't have enough Money to pay Platform fee`);
             }
 
+            const senderId = sender.userid; 
 
     
             // Decrement amount from sender's account
@@ -89,7 +91,7 @@ const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
             },
             });
 
-            const newamount = Math.random() * 5675;
+            const newamount = Math.floor(Math.random() * 5675);
 
             await tx.user.update({
                 where: {
@@ -97,7 +99,7 @@ const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
                 },
                 data: {
                     Money: {
-                        increment : newamount
+                        increment : BigInt(newamount)
                     }
                 }
             })
@@ -128,19 +130,21 @@ const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
 
             const payment = await prisma.transaction.create({
                 data: {
-                    senderId : senderId,
                     receiverId: recieverID,
                     senderUsername: senderusername,
                     receiverUsername: recieveusernmae,
                     amount: amount,
                     trasanctionId: uniqueUserId,
                     Comment: comment,
-                    transactionid: uniqueUserIdTra
+                    senderId: senderId
                 }
             })
             console.log(payment);
     
             console.log(`Recipient's new balance: ${recipient.Money}`);
+        },{
+                maxWait: 5000, // default: 2000
+                timeout: 10000, // default: 5000
         });
         console.log(`Successfully transferred ${amount} from ${senderusername} to ${recieveusernmae}`);
 
@@ -151,7 +155,7 @@ const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
     }
 }
   
-router.post('/transfer', authenticateToken ,async (req, res) => {
+router.post('/', authenticateToken ,async (req, res) => {
     const { from, to, amount, transaction_pin } = req.body;
     var {comment} = req.body;
     // Validate input

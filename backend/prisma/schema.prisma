@@ -38,6 +38,33 @@ model User {
     Friend               Friend[]
     CreditScore          Int                @default(0)
 }
+
+model RequestFriend {
+    user      User     @relation(fields: [userId], references: [userid], onDelete: Cascade)
+    userId    String   @unique
+    createdAt DateTime @default(now())
+    username  String   @unique
+}
+
+
+model Friend {
+    id        Int      @id @default(autoincrement())
+    user      User     @relation(fields: [userId], references: [userid])
+    userId    String   @unique
+    friend    User     @relation("FriendUser", fields: [friendId], references: [userid])
+    friendId  String   @unique
+    createdAt DateTime @default(now())
+}
+
+model SentRequest {
+    id        Int      @id @default(autoincrement())
+    user      User     @relation(fields: [userId], references: [userid])
+    createdAt DateTime @default(now())
+    userId    String   @unique
+    username  String   @default("")
+}
+
+
 model Transaction_Pass {
     id              Int    @id @unique @default(autoincrement())
     userId          String @unique
@@ -64,29 +91,7 @@ model Leaderboard {
 
 
 
-model Friend {
-    id        Int      @id @default(autoincrement())
-    user      User     @relation(fields: [userId], references: [userid])
-    userId    String   @unique
-    friend    User     @relation("FriendUser", fields: [friendId], references: [userid])
-    friendId  String   @unique
-    createdAt DateTime @default(now())
-}
 
-model SentRequest {
-    id        Int      @id @default(autoincrement())
-    user      User     @relation(fields: [userId], references: [userid])
-    createdAt DateTime @default(now())
-    userId    String   @unique
-    username  String   @default("")
-}
-
-model RequestFriend {
-    user      User     @relation(fields: [userId], references: [userid], onDelete: Cascade)
-    userId    String   @unique
-    createdAt DateTime @default(now())
-    username  String   @unique
-}
 
 model MoneyRequest {
     id             Int    @id @default(autoincrement())
@@ -112,15 +117,14 @@ model Donation {
 
 
 model Transaction {
-    id               Int      @unique @default(autoincrement())
+    id               Int      @unique @default(autoincrement()) @id
     trasanctionId    String   @unique
-    senderId         String   @unique
-    receiverId       String   @unique
-    senderUsername   String   @unique
-    receiverUsername String   @unique
+    senderId         String   
+    receiverId       String   
+    senderUsername   String   
+    receiverUsername String   
     amount           BigInt
     TransactionAt    DateTime @default(now())
-    transactionid    String   @unique
     Comment          String?
 }
 
