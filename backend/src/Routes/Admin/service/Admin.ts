@@ -109,50 +109,6 @@ router.get('/user_transaction',  authorizeAdmin,async (req, res) => {
 
 
   
-router.get('/leaderboard', authorizeAdmin, async (req, res) => {
-    try {
-        const leaderboardData = await prisma.leaderboard.findMany({
-            include: {
-                users: {
-                    select: {
-                        id: true,
-                        name: true,
-                        username: true,
-                        email: true,
-                        Money: true,
-                        totalTransactionDone: true,
-                    },
-                    orderBy: { Money: 'desc' } // Sort users by money
-                },
-            },
-            orderBy: {
-                totalTransactionMoney: 'desc', // Sort leaderboard by total money
-            },
-        });
-
-        // Convert BigInt to String to prevent JSON errors
-        const convertBigIntToString = (obj: any): any =>
-            JSON.parse(JSON.stringify(obj, (_, value) => (typeof value === "bigint" ? value.toString() : value)));
-
-        const leaderboard = leaderboardData.map((entry, index) => ({
-            rank: index + 1, // Assign rank based on sorted position
-            totalTransactionMoney: convertBigIntToString(entry.totalTransactionMoney),
-            users: entry.users.map((u) => ({
-                id: u.id,
-                name: u.name,
-                username: u.username,
-                email: u.email,
-                Money: convertBigIntToString(u.Money),
-                totalTransactionDone: u.totalTransactionDone,
-            })),
-        }));
-
-        res.status(200).json({ leaderboard });
-    } catch (error) {
-        console.error('Error fetching leaderboard:', error);
-        res.status(500).json({ error: 'Failed to fetch leaderboard data.' });
-    }
-});
 
 
 router.get('/user_list',authorizeAdmin ,async (req , res) => {
@@ -188,3 +144,4 @@ router.get('/user_list',authorizeAdmin ,async (req , res) => {
 
 
 export default router
+

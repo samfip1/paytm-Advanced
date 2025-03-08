@@ -20,59 +20,15 @@ model User {
     userid               String             @unique
     totalTransactionDone Int                @default(0)
     totalnumberofSignin  Int                @default(0)
-    leaderboardId        Int
-    leaderboard          Leaderboard        @relation(fields: [leaderboardId], references: [id])
     transaction_Pass     Transaction_Pass[]
-    loginhistory         LoginActivity[]
-    loanMoney            Loan[]
     FraudUser            Fraud_People?
     donation             Donation[]
-    blog                 blog[]
     referralId           BigInt             @default(0)
-    requestForMoney      MoneyRequest?
-    sentRequests         SentRequest[]
-    receivedRequests     Request[]
-    friendsList          Friend[]           @relation("FriendUser")
     totalRequests        Int                @default(0)
-    requestFriends       RequestFriend[]
-    Friend               Friend[]
+
     CreditScore          Int                @default(0)
 }
-model MoneyRequest {
-    id             Int    @id @default(autoincrement())
-    moneyrequest   User   @relation(fields: [moneyRequestId], references: [userid])
-    moneyRequestId String @unique
-    reciverId      String @unique
-    senderId       String @unique
-    message        String
-    money          BigInt
-    status         String @default("pending") // pending, accepted, rejected
-}
 
-model RequestFriend {
-    user      User     @relation(fields: [userId], references: [userid], onDelete: Cascade)
-    userId    String   @unique
-    createdAt DateTime @default(now())
-    username  String   @unique
-}
-
-
-model Friend {
-    id        Int      @id @default(autoincrement())
-    user      User     @relation(fields: [userId], references: [userid])
-    userId    String   @unique
-    friend    User     @relation("FriendUser", fields: [friendId], references: [userid])
-    friendId  String   @unique
-    createdAt DateTime @default(now())
-}
-
-model SentRequest {
-    id        Int      @id @default(autoincrement())
-    user      User     @relation(fields: [userId], references: [userid])
-    createdAt DateTime @default(now())
-    userId    String   @unique
-    username  String   @default("")
-}
 
 
 model Transaction_Pass {
@@ -81,23 +37,14 @@ model Transaction_Pass {
     user            User   @relation(fields: [userId], references: [userid])
     transaction_Pin BigInt
 }
-model blog {
-    id               Int      @unique @default(autoincrement())
-    content          String
-    blog             User     @relation(fields: [contentId], references: [userid])
-    username         String   @unique
-    HeadingOfContent String
-    contentId        String   @unique
-    numberOflike     Int
-    CreatedAt        DateTime @default(now())
-}
 
-model Leaderboard {
-    id                    Int    @id @unique @default(autoincrement())
-    rank                  Int    @unique
-    totalTransactionMoney Int
-    users                 User[]
-}
+
+// model Leaderboard {
+//     id                    Int    @id @unique @default(autoincrement())
+//     rank                  Int    @unique
+//     totalTransactionMoney Int
+//     users                 User[]
+// }
 
 
 
@@ -128,40 +75,20 @@ model Transaction {
     Comment          String?
 }
 
-model Request {
-    id                  Int      @id @default(autoincrement())
-    requester_username  String   @unique
-    requesting_username String   @unique
-    request_money       BigInt
-    requestid           String   @unique
-    reason              String
-    RequestCreatedAt    DateTime @default(now())
-    receiver            User     @relation(fields: [receiverId], references: [userid])
-    receiverId          String   @unique
-}
 
-model Loan {
-    id            Int      @id @default(autoincrement())
-    loanId        String   @unique
-    loanMoney     Decimal
-    time          Int
-    interest      Decimal
-    repaymentDate DateTime
-    status        String   @default("pending") // pending, repaid, defaulted
-    userId        String   @unique
-    user          User     @relation(fields: [userId], references: [userid])
-}
+
+
 
 // left to implement
-model LoginActivity {
-    id        Int      @id @default(autoincrement())
-    userId    String   @unique
-    ipAddress String
-    device    String
-    browser   String
-    createdAt DateTime @default(now())
-    user      User     @relation(fields: [userId], references: [userid])
-}
+// model LoginActivity {
+//     id        Int      @id @default(autoincrement())
+//     userId    String   @unique
+//     ipAddress String
+//     device    String
+//     browser   String
+//     createdAt DateTime @default(now())
+//     user      User     @relation(fields: [userId], references: [userid])
+// }
 
 model Admin {
     id          Int      @id @unique @default(autoincrement())

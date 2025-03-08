@@ -68,6 +68,7 @@ router.post("/", async (req: Request, res: Response) => {
       data: { totalsignin: loggedInAdmin.totalsignin + 1 },
     });
 
+    
     // Set cookie securely
     res.cookie("token", token, {
       httpOnly: true,

@@ -32,7 +32,8 @@ interface Money {
 }
 
 async function betgames(money: Money) {
-    // Input validation
+
+    
     if (money.bet_number_choice < 0 || money.input_number < 0) {
         throw new Error("Invalid input: Values must be non-negative numbers.");
     }
@@ -178,6 +179,7 @@ router.post('/mini_games', authenticateToken, async (req, res) => {
 
     }
 });
+
 
 
 

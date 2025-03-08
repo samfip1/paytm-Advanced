@@ -6,7 +6,6 @@ import endpointsConfig from "./endpoints.config";
 
 const SECRET_KEY = endpointsConfig.SK;
 
-// Extend the Request interface to include the `user` property
 interface AuthenticatedRequest extends Request {
     user?: {
         id: number;
@@ -16,7 +15,8 @@ interface AuthenticatedRequest extends Request {
 }
 
 export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-    // Check for the token in cookies
+
+    
     const token = req.cookies?.token;
 
     if (!token) {
@@ -25,7 +25,7 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
     }
 
     try {
-        // Verify the token
+        
         const decoded = jwt.verify(token, SECRET_KEY) as { id: number; username: string; role: string };
 
         // Attach the decoded user data to the request object
@@ -41,3 +41,4 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
         res.status(403).json({ message: "Invalid Token" });
     }
 };
+

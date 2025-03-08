@@ -94,7 +94,8 @@ router.post('/', async (req, res) => {
             phone
         });
 
-        // JWT SIGNIN
+
+
         if (!newadminuser) {
             throw new Error("Failed to create new admin user");
         }

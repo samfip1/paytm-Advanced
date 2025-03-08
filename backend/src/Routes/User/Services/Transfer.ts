@@ -32,12 +32,10 @@ async function transfer(senderusername: string, recieveusernmae: string, amount:
   const uniqueTimestamp = Date.now();
 const uniqueUuid = uuidv4();
 
-// Combine UUIDv4 and timestamp for an even more unique identifier
 const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
 
   try {
         await prisma.$transaction(async (tx) => {
-            // Fetch sender's account balance before updating
 
 
             const sender = await tx.user.findUnique({
@@ -61,7 +59,6 @@ const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
 
 
     
-            // Check if sender has enough balance
             if (sender.Money < amount + 18) {
             throw new Error(`${senderusername} doesn't have enough balance to send ${amount}`);
             }
@@ -78,8 +75,7 @@ const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
 
             const senderId = sender.userid; 
 
-    
-            // Decrement amount from sender's account
+
             const updatedSender = await tx.user.update({
             where: { username: senderusername },
             data: {
@@ -109,12 +105,10 @@ const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
             const uniqueTimestamp = Date.now();
             const uniqueUuid = uuidv4();
             
-            // Combine UUIDv4 and timestamp for an even more unique identifier
+
             const uniqueUserIdTra = `${uniqueUuid}-${uniqueTimestamp}`;
             
-            
-
-            // Increment amount in recipient's account
+  
             const recipient = await tx.user.update({
             where: { 
                 username: recieveusernmae,
@@ -143,22 +137,23 @@ const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
     
             console.log(`Recipient's new balance: ${recipient.Money}`);
         },{
-                maxWait: 5000, // default: 2000
-                timeout: 10000, // default: 5000
+                maxWait: 5000, 
+                timeout: 10000, 
         });
         console.log(`Successfully transferred ${amount} from ${senderusername} to ${recieveusernmae}`);
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       console.error(errorMessage);
-      throw error; // Re-throw for external handling
+      throw error; 
     }
 }
   
 router.post('/', authenticateToken ,async (req, res) => {
     const { from, to, amount, transaction_pin } = req.body;
     var {comment} = req.body;
-    // Validate input
+
+    
     if (!from || !to || typeof amount !== 'number' || amount <= 0) {
       res.status(400).json({ error: 'Invalid input. Please provide valid `from`, `to`, and `amount`.' });
       return;

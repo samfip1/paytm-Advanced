@@ -1,7 +1,5 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
@@ -58,7 +56,7 @@ router.post('/Make_Donation', authenticateToken ,async (req, res ) => {
 const uniqueTimestamp = Date.now();
 const uniqueUuid = uuidv4();
 
-// Combine UUIDv4 and timestamp for an even more unique identifier
+
 const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
 
 

@@ -19,6 +19,7 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+
 // Middleware to authenticate and verify admin access
 export const authorizeAdmin = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   // Check for the token in cookies
