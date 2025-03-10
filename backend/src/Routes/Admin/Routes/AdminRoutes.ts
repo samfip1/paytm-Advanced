@@ -18,17 +18,15 @@ import SignUp from '../Controller/Signup/Signup'
 import UserOperation from '../service/Admin'
 import ControlPanel from '../service/AuthWork'
 
-// Register Signin and Signup routes
+
 router.use('/Signin', Signin);
 router.use('/SignUp', SignUp);
 
-// List of service routes
 const services = {
     UserOperation,
     ControlPanel
 };
 
-// Dynamically prepend '/Signin' to all service routes
 Object.entries(services).forEach(([name, service]) => {
   router.use(`/Signin/${name}`, service);
 });

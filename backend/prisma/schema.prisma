@@ -26,17 +26,14 @@ model User {
     referralId           BigInt             @default(0)
     totalRequests        Int                @default(0)
 
-    CreditScore          Int                @default(0)
+    CreditScore Int @default(0)
 }
-
-
 
 model Transaction_Pass {
     id              Int    @id @unique @default(autoincrement())
-    userId          String 
-    user            User   @relation(fields: [userId], references: [userid])
+    userId          String
+    user            User   @relation(fields: [userId], references: [userid], onDelete: Cascade)
     transaction_Pin BigInt
-
 }
 
 // model Leaderboard {
@@ -46,49 +43,29 @@ model Transaction_Pass {
 //     users                 User[]
 // }
 
-
-
-
-
-
 model Donation {
-    id             Int      @default(autoincrement())   @unique
-    donationId     String   
-    senderId       String  
-    senderUsername String   
+    id             Int      @unique @default(autoincrement())
+    donationId     String
+    senderId       String?
+    senderUsername String
     DonatedMoney   BigInt
-    donation       User     @relation(fields: [senderId], references: [userid])
+    donation       User?    @relation(fields: [senderId], references: [userid], onDelete: SetNull)
     message        String?
     donatedAt      DateTime @default(now())
 }
 
-
 model Transaction {
-    id               Int      @unique @default(autoincrement()) @id
+    id               Int      @id @unique @default(autoincrement())
     trasanctionId    String   @unique
-    senderId         String   
-    receiverId       String   
-    senderUsername   String   
-    receiverUsername String   
+    senderId         String
+    receiverId       String
+    senderUsername   String
+    receiverUsername String
     amount           BigInt
     TransactionAt    DateTime @default(now())
     Comment          String?
 }
 
-
-
-
-
-// left to implement
-// model LoginActivity {
-//     id        Int      @id @default(autoincrement())
-//     userId    String   @unique
-//     ipAddress String
-//     device    String
-//     browser   String
-//     createdAt DateTime @default(now())
-//     user      User     @relation(fields: [userId], references: [userid])
-// }
 
 model Admin {
     id          Int      @id @unique @default(autoincrement())
@@ -97,22 +74,22 @@ model Admin {
     password    String
     email       String   @unique
     adminId     String   @unique
-    phone       String   @unique 
+    phone       String   @unique
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
     totalsignin Int      @default(0)
 }
 
 model Fraud_People {
-    id                   Int      @unique @default(autoincrement())
-    user                 User     @relation(fields: [fraud_people_userid], references: [userid])
+    id                   Int      @id @default(autoincrement())
+    user                 User     @relation(fields: [fraud_people_userid], references: [userid], onDelete: Cascade)
     fraud_people_userid  String   @unique
     reason               String
-    Total_Money          BigInt   @unique
-    username             String   @unique
+    Total_Money          BigInt
+    username             String
     createdAt            DateTime @default(now())
-    email                String   @unique
-    phone                BigInt   @unique
+    email                String
+    phone                BigInt
     totalnumberofSignin  Int
     totalTransactionDone Int
 }

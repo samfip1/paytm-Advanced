@@ -89,16 +89,20 @@ router.get('/profile', authorizeAdmin ,async (req, res) => {
 
 
 
-
-
-
-
-router.get('/user_transaction',  authorizeAdmin,async (req, res) => {
+router.get('/user_transaction', authorizeAdmin, async (req, res) => {
     try {
-
       const allTransactionList = await prisma.transaction.findMany();
+
       
-      res.status(200).json(allTransactionList);
+      const jsonCompatibleTransactions = allTransactionList.map(transaction => {
+        return Object.fromEntries(
+          Object.entries(transaction).map(([key, value]) => {
+            return [key, typeof value === 'bigint' ? value.toString() : value];
+          })
+        );
+      });
+
+      res.status(200).json(jsonCompatibleTransactions);
 
     } catch (error) {
       console.error("Error fetching transactions:", error);
@@ -108,10 +112,8 @@ router.get('/user_transaction',  authorizeAdmin,async (req, res) => {
 
 
 
-  
 
-
-router.get('/user_list',authorizeAdmin ,async (req , res) => {
+router.get('/user_list', authorizeAdmin, async (req, res) => {
     try {
         const total_user_list = await prisma.user.findMany({
             orderBy: {
@@ -132,13 +134,21 @@ router.get('/user_list',authorizeAdmin ,async (req , res) => {
             }
         });
 
-        res.status(200).json({ total_user_list });
+        
+        const userListWithStrings = total_user_list.map(user => ({
+            ...user,
+            Money: user.Money.toString(),
+            phone: user.phone.toString(),
+            
+        }));
+
+
+        res.status(200).json({ total_user_list: userListWithStrings });
     } catch (error) {
         console.error('Error fetching user list:', error);
         res.status(500).json({ error: 'Failed to fetch user list' });
     }
 });
-
 
 
 export default router
