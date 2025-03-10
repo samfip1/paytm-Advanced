@@ -22,7 +22,7 @@ app.use(cookieParser());
 
 
 
-router.post('/Make_Donation', authenticateToken ,async (req, res ) => {
+router.get('/', authenticateToken ,async (req, res ) => {
 
     const {username } = req.body;
 
@@ -46,7 +46,7 @@ router.post('/Make_Donation', authenticateToken ,async (req, res ) => {
 
         else
         {res.status(200).json({
-            Money : user.Money
+            Money : Number(user.Money)
         })}
 
     }

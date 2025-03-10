@@ -33,11 +33,11 @@ model User {
 
 model Transaction_Pass {
     id              Int    @id @unique @default(autoincrement())
-    userId          String @unique
+    userId          String 
     user            User   @relation(fields: [userId], references: [userid])
     transaction_Pin BigInt
-}
 
+}
 
 // model Leaderboard {
 //     id                    Int    @id @unique @default(autoincrement())
