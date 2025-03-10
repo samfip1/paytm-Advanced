@@ -141,7 +141,5 @@ router.get('/user_list',authorizeAdmin ,async (req , res) => {
 
 
 
-
-
 export default router
 

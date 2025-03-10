@@ -52,10 +52,10 @@ model Transaction_Pass {
 
 
 model Donation {
-    id             Int      @default(autoincrement())
-    donationId     String   @unique
-    senderId       String   @unique
-    senderUsername String   @unique
+    id             Int      @default(autoincrement())   @unique
+    donationId     String   
+    senderId       String  
+    senderUsername String   
     DonatedMoney   BigInt
     donation       User     @relation(fields: [senderId], references: [userid])
     message        String?
@@ -97,7 +97,7 @@ model Admin {
     password    String
     email       String   @unique
     adminId     String   @unique
-    phone       BigInt   @unique
+    phone       String   @unique 
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
     totalsignin Int      @default(0)

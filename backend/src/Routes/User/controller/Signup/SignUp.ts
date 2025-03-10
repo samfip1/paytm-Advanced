@@ -122,7 +122,7 @@ router.post("/", async (req, res) => {
             email,
             Money: 0,
             phone: BigInt(phone),
-            userid:uniqueUserId , // Temporary placeholder
+            userid:uniqueUserId , 
             transaction_Pin,
         });
 
@@ -133,10 +133,10 @@ router.post("/", async (req, res) => {
             { expiresIn: "1h" }
         );
 
-        // Set token in a secure HTTP-only cookie
+        
         res.cookie("token", token, { httpOnly: true });
 
-        // Send response with converted BigInt values
+        
         res.status(201).json({
             message: "User created successfully",
             user: convertBigIntToString(newUser),

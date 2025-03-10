@@ -84,7 +84,6 @@ const signinUser = async (signinUser: signinUser) => {
 
 
 
-// Signin Route
 router.post("/", async (req, res) => {
     const { username, password } = req.body;
 
@@ -148,6 +147,44 @@ router.post("/", async (req, res) => {
 });
 
 
+router.post("/logout", (req, res) => {
+    const cookieName = "token"; 
+  
+    res.clearCookie(cookieName, {
+      httpOnly: true,
+      sameSite: 'strict' 
+    });
+  
+    res.status(200).json({ message: "Successfully logged out" });
+});
 
+
+router.get("/profile", async (req, res) => {
+
+    const {username} = req.body;
+    if(!username) {
+        res.status(400).json({ error: "Username is required" });
+        return
+    }
+
+    try {
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                username : username
+            }
+        });
+        if(!existingUser) {
+            res.status(400).json({ error: "User with this username does not exist" });
+            return
+        }
+        res.status(200).json({
+            user: convertBigIntToString(existingUser)
+        });
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+        res.status(500).json({ error: "Something went wrong", details: errorMessage });
+    }
+
+});
 
 export default router

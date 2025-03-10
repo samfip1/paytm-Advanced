@@ -24,7 +24,7 @@ interface adminSignup {
     password: string;
     name: string;
     email: string;
-    phone: bigint;
+    phone: string;
 }
 
 // Function to validate admin
@@ -59,11 +59,11 @@ const isValidAdmin = async (adminuser: adminSignup) => {
 const uniqueTimestamp = Date.now();
 const uniqueUuid = uuidv4();
 
-// Combine UUIDv4 and timestamp for an even more unique identifier
+
 const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
 
 
-        const hashPasswordAdmin = await bcrypt.hash(password, 12); // Use async hash
+        const hashPasswordAdmin = await bcrypt.hash(password, 12); 
         const Newadmin = await prisma.admin.create({
             data: {
                 username,
@@ -77,8 +77,8 @@ const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
 
         return Newadmin;
     } catch (error) {
-        console.error(error); // Use better error logging in production
-        throw error; // Rethrow error to be handled in the controller
+        console.error(error);
+        throw error; 
     }
 };
 
