@@ -36,12 +36,6 @@ model Transaction_Pass {
     transaction_Pin BigInt
 }
 
-// model Leaderboard {
-//     id                    Int    @id @unique @default(autoincrement())
-//     rank                  Int    @unique
-//     totalTransactionMoney Int
-//     users                 User[]
-// }
 
 model Donation {
     id             Int      @unique @default(autoincrement())
