@@ -25,12 +25,12 @@ app.use(cookieParser());
 router.post('/Make_Donation', authenticateToken ,async (req, res ) => {
 
     let {userid, DonatedMoney, message} = req.body;
-
+    
+    if(!message) message = ""
     if (!userid || !DonatedMoney || !message ) {
         res.status(400).json({ error: "All the information is not provided" });
         return
     }
-    if(!message) message = ""
     try {
 
         await prisma.$transaction(async (tsx) => {

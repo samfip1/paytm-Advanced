@@ -14,6 +14,7 @@ import SignUp from "../controller/Signup/SignUp";
 
 import BetGames from "../Services/BetGames";
 import Donation from "../Services/Donation";
+import Transfer from "../Services/Transfer"
 
 router.use("/Signin", Signin);
 router.use("/SignUp", SignUp);
@@ -22,6 +23,7 @@ router.use("/SignUp", SignUp);
 const services = {
     BetGames,
     Donation,
+    Transfer
 };
 
 

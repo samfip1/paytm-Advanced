@@ -22,12 +22,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 
 
-
-
-
-
-
-
 async function transfer(senderusername: string, recieveusernmae: string, amount: number, transaction_Pin: number, comment: string): Promise<void> {
   const uniqueTimestamp = Date.now();
 const uniqueUuid = uuidv4();

@@ -134,7 +134,9 @@ router.post("/", async (req, res) => {
         res.cookie("token", token, { httpOnly: true });
         res.status(200).json({
             message: "Successfully logged in",
-            user : convertBigIntToString(existingUser)
+            user : convertBigIntToString(existingUser),
+            token: token
+
         });
     } catch (error) {
         const errorMessage =
