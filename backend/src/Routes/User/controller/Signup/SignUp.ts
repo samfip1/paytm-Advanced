@@ -1,3 +1,4 @@
+// Backend (server.js or similar)
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
@@ -7,6 +8,8 @@ import cookieParser from "cookie-parser";
 import * as dotenv from 'dotenv';
 dotenv.config();
 import endpointsConfig from "../../Middleware/endpoints.config";
+import { v4 as uuidv4 } from 'uuid';
+
 const prisma = new PrismaClient();
 const app = express();
 const SECRET_KEY = endpointsConfig.SK;
@@ -18,15 +21,6 @@ app.use(express.json());
 app.use(cookieParser());
 
 
-import { v4 as uuidv4 } from 'uuid';
-
-// Generate a unique userid using a combination of UUID and timestamp
-const uniqueTimestamp = Date.now();
-const uniqueUuid = uuidv4();
-
-// Combine UUIDv4 and timestamp for an even more unique identifier
-const uniqueUserId = `${uniqueUuid}-${uniqueTimestamp}`;
-
 
 interface User {
     username: string;
@@ -34,7 +28,7 @@ interface User {
     name: string;
     email: string;
     Money: number;
-    phone: bigint;
+    phone: bigint
     userid: string;
     transaction_Pin : number;
 }
@@ -48,12 +42,15 @@ const convertBigIntToString = (obj: any): any => {
 
 // Function to validate user and create a new account
 const isValidUser = async (user: User) => {
-    const { username, password, name, email, phone, transaction_Pin } = user;
-
+    const { username, password, name, email, phone, transaction_Pin, userid } = user;  // Added userid here
     // Check for duplicate email, username, or phone
     const existingUser = await prisma.user.findFirst({
         where: {
-            OR: [{ email }, { username }, { phone }],
+            OR: [
+                { email },
+                { username },
+                { phone },
+            ],
         },
     });
 
@@ -69,41 +66,40 @@ const isValidUser = async (user: User) => {
         }
     }
 
-
-
-
     const hashedPassword = bcrypt.hashSync(password, 12);
     const referralId = BigInt(Math.floor(Math.random() * 204482234));
     const randomMoney = BigInt(Math.floor(Math.random() * (875888565 - 7856 + 1)) + 18976009);
 
+    // Create the new user with a valid leaderboard reference
+    try {
+        const newUser = await prisma.user.create({
+            data: {
+                username,
+                password: hashedPassword,
+                name,
+                email,
+                Money: randomMoney,
+                phone,
+                userid,  // Use the userid passed into the function.
+                referralId,
+                CreditScore: 0,
+            },
+        });
 
-// Create the new user with a valid leaderboard reference
-const newUser = await prisma.user.create({
-    data: {
-        username,
-        password: hashedPassword,
-        name,
-        email,
-        Money: randomMoney,
-        phone,
-        userid: uniqueUserId,
-        referralId,
-        CreditScore: 0,
-    },
-});
-
-
-    // Insert transaction PIN
-    await prisma.transaction_Pass.create({
-        data: {
-            user: { connect: { userid: newUser.userid } },
-            transaction_Pin: transaction_Pin,
-        },
-    });
-
-    return newUser;
+        // Insert transaction PIN
+        await prisma.transaction_Pass.create({
+            data: {
+                user: { connect: { userid: newUser.userid } },
+                transaction_Pin: transaction_Pin,
+            },
+        });
+        return newUser;
+    }
+    catch (error){
+        console.log(error);
+        throw error;
+    }
 };
-
 
 // Signup Route
 router.post("/", async (req, res) => {
@@ -115,14 +111,16 @@ router.post("/", async (req, res) => {
     }
 
     try {
+
+        const uniqueUserId = uuidv4();  // Generate UUID *inside* the handler
         const newUser = await isValidUser({
             username,
             password,
             name,
             email,
             Money: 0,
-            phone: BigInt(phone),
-            userid:uniqueUserId , 
+            phone: BigInt(phone), 
+            userid:uniqueUserId ,
             transaction_Pin,
         });
 
@@ -133,10 +131,10 @@ router.post("/", async (req, res) => {
             { expiresIn: "1h" }
         );
 
-        
+
         res.cookie("token", token, { httpOnly: true });
 
-        
+
         res.status(201).json({
             message: "User created successfully",
             user: convertBigIntToString(newUser),
@@ -148,4 +146,3 @@ router.post("/", async (req, res) => {
 });
 
 export default router;
-
