@@ -159,9 +159,10 @@ router.post("/logout", (req, res) => {
 });
 
 
-router.get("/profile", async (req, res) => {
+router.get("/profile/:username", async (req, res) => {
 
-    const {username} = req.body;
+    const {username} = req.params;
+    console.log(username);
     if(!username) {
         res.status(400).json({ error: "Username is required" });
         return
@@ -184,7 +185,6 @@ router.get("/profile", async (req, res) => {
         const errorMessage = error instanceof Error ? error.message : "Something went wrong";
         res.status(500).json({ error: "Something went wrong", details: errorMessage });
     }
-
 });
 
 export default router

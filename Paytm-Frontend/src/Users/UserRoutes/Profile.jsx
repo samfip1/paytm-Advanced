@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import {jwtDecode} from 'jwt-decode';
 
 function Profile() {
     const [userData, setUserData] = useState(null);
@@ -10,6 +11,9 @@ function Profile() {
         const fetchData = async () => {
             try {
                 let token = localStorage.getItem("authToken");
+                const decoded=jwtDecode(token);
+                const username=decoded.username;
+                console.log(username);
                 const cookie = document.cookie.split('; ').find(row => row.startsWith('authCookie='))?.split('=')[1]; //Get cookie
 
                 //Prioritize token, if not found use cookie
@@ -21,15 +25,15 @@ function Profile() {
 
                 let headers = {};
                 if (token) {
-                    headers['Authorization'] = `Bearer ${token}`;
+                    headers['Authorization'] = Bearer `${token}`;
                 } else if (cookie) {
-                    headers['Authorization'] = `Bearer ${cookie}`; 
+                    headers['Authorization'] = Bearer `${cookie}`; 
                     
                     console.log("Using cookie for authorization")
                 }
 
                 const response = await axios.get(
-                    "https://paytm-backend-neod.onrender.com/api/v1/user/signin/profile",
+                    `http://localhost:5000/api/v1/user/signin/profile/${username}`,
                     { headers }
                 );
 
@@ -61,7 +65,7 @@ function Profile() {
                 {userData ? (
                     <div className="bg-gray-50 p-4 rounded-lg mb-6 shadow-sm">
                         <p className="text-lg font-semibold">User ID:</p>
-                        <p className="text-gray-700">{userData.userid}</p>
+                        <p className="text-w">{userData.userid}</p>
                     </div>
                 ) : (
                     <p className="text-center text-gray-500">Loading...</p>
