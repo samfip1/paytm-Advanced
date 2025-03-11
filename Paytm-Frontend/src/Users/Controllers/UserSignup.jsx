@@ -134,7 +134,7 @@ const UserSignUp = () => {
       });
 
       setTimeout(() => {
-        navigate("/user/Signin");
+        navigate("/api/v1/user/Signin");
       }, 2000);
     } catch (error) {
       console.error("API Error:", error);
@@ -299,7 +299,7 @@ const UserSignUp = () => {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{" "}
-          <a href="/user/Signin" className="text-blue-500 font-medium hover:underline">
+          <a href="/api/v1/user/Signin" className="text-blue-500 font-medium hover:underline">
             Log in
           </a>
         </p>
