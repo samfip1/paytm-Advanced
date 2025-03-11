@@ -145,4 +145,11 @@ router.post("/", async (req, res) => {
     }
 });
 
+router.get("/", async (req, res) => {
+           res.status(200).json({
+            message: "Backend running successfully",
+        });
+    } 
+);
+
 export default router;
