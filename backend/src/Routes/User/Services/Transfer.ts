@@ -79,19 +79,6 @@ async function transfer(
 
                 console.log(`Sender's new balance: ${updatedSender.Money}`);
 
-                // Remove the random amount increment.  This seems like a bug.
-                // const newamount = Math.floor(Math.random() * 5675);
-                // await tx.user.update({
-                //   where: {
-                //     username: senderusername
-                //   },
-                //   data: {
-                //     Money: {
-                //       increment: BigInt(newamount)
-                //     }
-                //   }
-                // });
-
                 const recipient = await tx.user.update({
                     where: { username: recieveusernmae },
                     data: { Money: { increment: amount } },
@@ -131,7 +118,7 @@ async function transfer(
     }
 }
 
-router.post("/", authenticateToken, async (req, res) => {
+router.post("/transfer", authenticateToken, async (req, res) => {  //Removed /:transfer parameter from route as its not being used
     const { from, to, amount, transaction_pin } = req.body;
     let { comment } = req.body;
 
@@ -142,20 +129,31 @@ router.post("/", authenticateToken, async (req, res) => {
         amount <= 0 ||
         typeof transaction_pin !== "number"
     ) {
-        res.status(400).json({
-            error: "Invalid input. Please provide valid `from`, `to`, `amount`, and `transaction_pin`.",
-        });
-        return;
+        res.status(400).json({  // Added return to prevent further execution
+        error: "Invalid input. Please provide valid `from`, `to`, `amount`, and `transaction_pin`.",
+        })
+        return
     }
 
     comment = comment || "";
 
     try {
-        await transfer(from, to, amount, transaction_pin, comment);
+        //Moved transfer function to try block
+
+        const transferResult = await transfer(from, to, amount, transaction_pin, comment); // Call the transfer function
+
         res.status(200).json({
             message: `Successfully transferred ${amount} from ${from} to ${to}.`,
+            transfer: { // Include the transfer data
+                from: from,
+                to: to,
+                amount: amount,
+                comment: comment,
+                // Include any other relevant data you want to send back.
+            },
         });
     } catch (error) {
+        console.error("Transfer error:", error); // Log the full error on the server
         const errorMessage =
             error instanceof Error
                 ? error.message

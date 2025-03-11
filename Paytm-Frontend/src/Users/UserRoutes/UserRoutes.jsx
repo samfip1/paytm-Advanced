@@ -9,7 +9,7 @@ import Transfer from "./Transfer";
 function UserRoutes() {
     return (
         <div>
-            <h1 class="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-5 mt-3 text-center">
+            <h1 className="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-5 mt-3 text-center">
     PayClone
 </h1>
             <Routes>

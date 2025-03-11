@@ -25,9 +25,9 @@ function Profile() {
 
                 let headers = {};
                 if (token) {
-                    headers['Authorization'] = Bearer `${token}`;
+                    headers['Authorization'] = `Bearer ${token}`;
                 } else if (cookie) {
-                    headers['Authorization'] = Bearer `${cookie}`; 
+                    headers['Authorization'] = `Bearer ${cookie}`; 
                     
                     console.log("Using cookie for authorization")
                 }
