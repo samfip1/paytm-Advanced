@@ -98,10 +98,10 @@ const UserSignIn = () => {
                 navigate("/user");
             }, 2000);
 
-            
+
             setSuccessMessage("Login successful! Redirecting...");
             setTimeout(() => {
-                navigate("/user");  
+                navigate("/user/profile");  
             }, 2000);
         } catch (error) {
             setApiError(error.message);

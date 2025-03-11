@@ -32,7 +32,7 @@ const Balance = () => {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
-                    data: requestBody, // Passing username in the request body
+                    data: requestBody, 
                 }
             );
 
