@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import {jwtDecode} from 'jwt-decode';
 
 const Balance = () => {
     const [balance, setBalance] = useState(null);
@@ -11,8 +12,12 @@ const Balance = () => {
         try {
             setRefreshing(true);
 
-            const username = localStorage.getItem("username")?.trim();
-            const token = localStorage.getItem("authToken")?.trim(); // Use 'authToken'
+
+            let token = localStorage.getItem("authToken");
+            const decoded=jwtDecode(token);
+            const username=decoded.username;
+            // const username = localStorage.getItem("username")?.trim();
+            // const token = localStorage.getItem("authToken")?.trim(); // Use 'authToken'
 
             console.log("Token from localStorage:", token); // DEBUG
             console.log("Username from localStorage:", username);
@@ -25,14 +30,18 @@ const Balance = () => {
                 return;
             }
 
+            let headers = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                } else if (cookie) {
+                    headers['Authorization'] = `Bearer ${cookie}`; 
+                    
+                    console.log("Using cookie for authorization")
+                }
+
             const response = await axios.get(
                 `https://paytm-backend-neod.onrender.com/api/v1/user/signin/Balance/${username}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                }
+                    { headers }
             );
 
             setBalance(response.data.Money);

@@ -28,8 +28,7 @@ router.get('/:username', authenticateToken ,async (req, res ) => {
         res.status(400).json({ error: "All the information is not provided" });
     }
 
-    try {
-        const user = await prisma.user.findFirst({
+    try {        const user = await prisma.user.findFirst({
             where : {
                 username : username
             },
