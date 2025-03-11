@@ -26,13 +26,12 @@ const Balance = () => {
             }
 
             const response = await axios.get(
-                `https://paytm-backend-neod.onrender.com/api/v1/user/signin/Balance`,
+                `https://paytm-backend-neod.onrender.com/api/v1/user/signin/Balance/${username}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
-                    data: requestBody, 
                 }
             );
 

@@ -22,9 +22,9 @@ app.use(cookieParser());
 
 
 
-router.post('/Make_Donation', authenticateToken ,async (req, res ) => {
+router.post('/Make_Donation/', authenticateToken ,async (req, res ) => {
 
-    let { userid, DonatedMoney, message } = req.body;
+    let { userid, DonatedMoney, message } = req.params;
 
     if(!message) message = "";
 

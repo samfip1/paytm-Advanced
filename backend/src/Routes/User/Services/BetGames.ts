@@ -10,20 +10,9 @@ const app = express();
 const router = express.Router();
 
 
-
-
-
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
-
-
-
-
-
-
-
-
 
 
 interface Money {
@@ -89,98 +78,87 @@ async function betgames(money: Money) {
     return price_money;
 }
 
-
 router.post('/mini_games', authenticateToken, async (req, res) => {
+    const { username, bet_number_choice, input_number } = req.body;
 
-    const {username} = req.body
-    const { bet_number_choice, input_number } = req.body;
+    
+    if (!username || bet_number_choice === undefined || input_number === undefined || typeof bet_number_choice !== 'number' || typeof input_number !== 'number' || input_number <= 0 || bet_number_choice <= 0) {
+         res.status(400).json({ success: false, error: "Invalid input data. Please provide a valid username, bet_number_choice, and a positive input_number." });
+         return
+    }
 
-
-    if(!username) throw new Error("Please Enter Username");    
     try {
-
-        if (bet_number_choice === undefined || input_number === undefined) {
-            res.status(400).json({ error: "Invalid request body." });
-            return
-        }
-
-        const gamblingUser = await prisma.user.findFirst({
+       
+        const gamblingUser = await prisma.user.findUnique({
             where: {
-                username: username
+                username: username,
             },
             select: {
-                Money: true
-            }
-        })
+                Money: true,
+                id: true 
+            },
+        });
 
-        if(!gamblingUser) {
-            throw new Error("User Does not Exist");            
+        if (!gamblingUser) {
+             res.status(404).json({ success: false, error: "User not found." });
+             return
         }
 
-        if(gamblingUser.Money < input_number) {
-            throw new Error("You Don't have this much of money in your bank Account");            
+        if (gamblingUser.Money < input_number) {
+             res.status(400).json({ success: false, error: "Insufficient funds." });
+             return
         }
 
-        await prisma.$transaction(async (atx) => {
-
-            try {
-                const betmoneyuser = await atx.user.update({
-                    where: {
-                        username: username
-                    },
-                    data : {
-                        Money: {
-                            decrement: input_number
-                        },
-                        CreditScore: {
-                            increment : 20
-                        }
-                    }
-                })  
-                return betmoneyuser
-            } catch (error) {
-                const errorMessage = error instanceof Error ? error.message: "An unknown error occurred";
-                res.status(500).json({ success: false, error: errorMessage });
-                return
-            } 
-        })
-
-
+        
         const money2: Money = { bet_number_choice, input_number };
         const result = await betgames(money2);
 
-        await prisma.$transaction(async (atx) => {
-
-            try {
-                const addmoneyUser = await atx.user.update({
-                    where: {
-                        username: username
-                    },
-                    data :{
-                        Money: {
-                            increment: result
-                        }
-                    }
-                })    
-            } catch (error) {
-                const errorMessage = error instanceof Error ? error.message: "An unknown error occurred";
-                res.status(500).json({ success: false, error: errorMessage });
-                return 
-            }
-        })
         
-        res.status(200).json({ success: true, prize: result });
-        return
+        try {
+            await prisma.$transaction(async (tx) => {
+                
+                const updatedUser = await tx.user.update({
+                    where: { id: gamblingUser.id }, 
+                    data: {
+                        Money: {
+                            decrement: input_number,
+                        },
+                        CreditScore: {
+                            increment: 20,
+                        },
+                    },
+                });
+
+               
+                await tx.user.update({
+                    where: { id: gamblingUser.id },
+                    data: {
+                        Money: {
+                            increment: result,
+                        },
+                    },
+                });
+
+                 updatedUser;
+                 return
+            });
+
+            
+             res.status(200).json({ success: true, prize: result });
+             return
+        } catch (transactionError) {
+            console.error("Transaction Error:", transactionError);
+             res.status(500).json({ success: false, error: "Transaction failed. Please try again." });
+             return
+        }
+
 
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message: "An unknown error occurred";
-        res.status(500).json({ success: false, error: errorMessage });
+        console.error("General Error:", error);
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        res.status(500).json({ success: false, error: `Internal server error: ${errorMessage}` });
         return
-
     }
 });
-
-
-
 
 export default router

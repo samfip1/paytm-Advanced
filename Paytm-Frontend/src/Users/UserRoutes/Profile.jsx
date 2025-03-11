@@ -33,7 +33,7 @@ function Profile() {
                 }
 
                 const response = await axios.get(
-                    `http://localhost:5000/api/v1/user/signin/profile/${username}`,
+                    `https://paytm-backend-neod.onrender.com/api/v1/user/signin/profile/${username}`,
                     { headers }
                 );
 
@@ -52,6 +52,7 @@ function Profile() {
                 }
             }
         };
+        console.log(userData);
 
         fetchData();
     }, [navigate]);
@@ -65,7 +66,7 @@ function Profile() {
                 {userData ? (
                     <div className="bg-gray-50 p-4 rounded-lg mb-6 shadow-sm">
                         <p className="text-lg font-semibold">User ID:</p>
-                        <p className="text-w">{userData.userid}</p>
+                        <p className="text-w">{userData.user.userid || "oiasefg"} </p>
                     </div>
                 ) : (
                     <p className="text-center text-gray-500">Loading...</p>

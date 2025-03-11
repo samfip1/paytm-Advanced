@@ -20,9 +20,9 @@ app.use(cookieParser());
 
 
 
-router.get('/', authenticateToken ,async (req, res ) => {
+router.get('/:username', authenticateToken ,async (req, res ) => {
 
-    const {username } = req.body;
+    const {username } = req.params;
 
     if (!username) {
         res.status(400).json({ error: "All the information is not provided" });

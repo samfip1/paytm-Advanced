@@ -118,7 +118,7 @@ async function transfer(
     }
 }
 
-router.post("/transfer", authenticateToken, async (req, res) => {  //Removed /:transfer parameter from route as its not being used
+router.post("/transfer", authenticateToken, async (req, res) => { 
     const { from, to, amount, transaction_pin } = req.body;
     let { comment } = req.body;
 
@@ -129,7 +129,7 @@ router.post("/transfer", authenticateToken, async (req, res) => {  //Removed /:t
         amount <= 0 ||
         typeof transaction_pin !== "number"
     ) {
-        res.status(400).json({  // Added return to prevent further execution
+        res.status(400).json({  
         error: "Invalid input. Please provide valid `from`, `to`, `amount`, and `transaction_pin`.",
         })
         return
