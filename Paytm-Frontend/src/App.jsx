@@ -1,15 +1,20 @@
-import { useState } from 'react'
-
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import UserSignIn from "./Users/Controllers/UserSignin";
+import UserSignUp from "./Users/Controllers/UserSignup";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
   return (
-    <div>
-      Hey
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/user/signin" element={<UserSignIn />} /> 
+        <Route path="/user/signup" element={<UserSignUp />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
