@@ -9,9 +9,9 @@ app.use(express.json());
 app.use(cookieParser());
 
 import Admin from "./Routes/Admin/Routes/AdminRoutes"
-import user from "./Routes/User/Routes/UserRoute"
+import User from "./Routes/User/Routes/UserRoute"
 app.use('/api/v1/admin', Admin);
-app.use('/api/v1/user', user);
+app.use('/api/v1/user', User);
 
 const PORT = 5000;
 app.listen(PORT, () => {
