@@ -16,7 +16,6 @@ const router = express.Router();
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
-import { v4 as uuidv4 } from 'uuid';
 
 
 

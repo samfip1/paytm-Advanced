@@ -1,7 +1,7 @@
-
-
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; // Import Link
+
+const API_ENDPOINT = "https://paytm-backend-neod.onrender.com/api/v1/user/login"; // Example constant
 
 const UserSignIn = () => {
     const navigate = useNavigate();
@@ -9,7 +9,6 @@ const UserSignIn = () => {
         username: "",
         password: "",
     });
-
 
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -36,11 +35,13 @@ const UserSignIn = () => {
 
         if (!formData.username.trim()) {
             newErrors.username = "Username is required";
-        }
+        } // Consider adding username regex validation here
 
         if (!formData.password) {
             newErrors.password = "Password is required";
-        }
+        } else if (formData.password.length < 8) {
+            newErrors.password = "Password must be at least 8 characters long";
+        } // Example minimum length
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -59,7 +60,7 @@ const UserSignIn = () => {
 
         try {
             const response = await fetch(
-                "https://paytm-backend-neod.onrender.com/api/v1/user/login", // Changed endpoint
+                API_ENDPOINT,
                 {
                     method: "POST",
                     headers: {
@@ -72,20 +73,27 @@ const UserSignIn = () => {
                 }
             );
 
-            const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || "Something went wrong");
+                let errorMessage = "Something went wrong";
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorMessage;
+                } catch (parseError) {
+                    console.error("Failed to parse error response:", parseError);
+                }
+                throw new Error(errorMessage);
             }
 
-            // Assuming your API returns a token or user data on successful login
-            // Store the token in local storage or use context API
-            localStorage.setItem('authToken', data.token); // Example - adapt to your API response
+
+            const data = await response.json();
+
+            localStorage.setItem('authToken', data.token);
 
             setSuccessMessage("Login successful! Redirecting...");
 
             setTimeout(() => {
-                navigate("/dashboard"); // Or your dashboard route
+                navigate("/dashboard");
             }, 2000);
         } catch (error) {
             setApiError(error.message);
@@ -186,16 +194,16 @@ const UserSignIn = () => {
                     </button>
                 </form>
 
-                
+
 
                 <p className="mt-6 text-center text-sm text-gray-600">
-                   New to Paytm?{" "}
-                    <a
-                        // href="/user/Signup"
+                    New to Paytm?{" "}
+                    <Link
+                        to="/user/Signup"
                         className="text-blue-500 font-medium hover:underline"
                     >
-                        Sign Up
-                    </a>
+                        Sign Ip
+                    </Link>
                 </p>
             </div>
         </div>
