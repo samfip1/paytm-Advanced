@@ -5,12 +5,11 @@ import BetGames from "./BetGames";
 import Donation from "./Donation";
 import Profile from "./Profile";
 import Transfer from "./Transfer";
-
 function UserRoutes() {
     return (
         <div>
-            <h1 className="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-5 mt-3 text-center">
-    PayClone
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-900  p-10  text-center shadow-xl">
+    Paytm
 </h1>
             <Routes>
                 <Route path="/balance" element={<Balance />} />
@@ -22,5 +21,4 @@ function UserRoutes() {
         </div>
     );
 }
-
 export default UserRoutes;

@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {jwtDecode} from 'jwt-decode';
 
 const Balance = () => {
+
+
+    const navigate = useNavigate();
     const [balance, setBalance] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -146,10 +150,10 @@ const Balance = () => {
                     </div>
 
                     <div className="mt-6 flex justify-center space-x-4">
-                        <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-300">
-                            Add Money
-                        </button>
-                        <button className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-300">
+                        <button 
+                        className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-300"
+                        onClick={() => navigate("../transfer")}
+                        >
                             Send Money
                         </button>
                     </div>

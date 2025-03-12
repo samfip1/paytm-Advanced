@@ -21,19 +21,21 @@ function Transfer() {
             return;
         }
 
-        try {
-            const response = await axios.post(
-                "https://paytm-backend-neod.onrender.com/api/v1/user/signin/transfer",
-                {
-                    from: cookies.username,
+        const Token = cookies.token;
+        const transferData  = {
+            from: cookies.username,
                     to: toUsername,
                     amount: parseFloat(amount),
                     transaction_pin: parseInt(transactionPin, 10),
                     comment: comment,
-                },
+        }
+
+        try {
+            const response = await axios.post(
+                `https://paytm-backend-neod.onrender.com/api/v1/user/signin/transfer/${transferData}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${cookies.token}`, 
+                        Authorization: `Bearer ${Token}`, 
                     },
                 }
             );
