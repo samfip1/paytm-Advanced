@@ -15,30 +15,35 @@ interface AuthenticatedRequest extends Request {
 }
 
 export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+    const authHeader = req.headers.authorization;
 
-    
-    const token = req.cookies?.token;
+    if (!authHeader) {
+        console.log("No Authorization header provided"); //DEBUG
+        res.status(401).json({ message: "Access Denied. No Token Provided." });
+        return
+    }
+
+    const token = authHeader.split(' ')[1]; // "Bearer <token>"
 
     if (!token) {
-        res.status(401).json({ message: "Access Denied. No Token Provided." });
-        return;
+        console.log("Malformed Authorization header"); //DEBUG
+        res.status(401).json({ message: "Access Denied. Malformed Token." });
+        return
     }
 
     try {
-        
         const decoded = jwt.verify(token, SECRET_KEY) as { id: number; username: string; role: string };
 
-        // Attach the decoded user data to the request object
         req.user = {
             id: decoded.id,
             username: decoded.username,
-            role: decoded.role, // Include role if present
+            role: decoded.role,
         };
 
-        next(); // Proceed to the next middleware/route handler
+        next();
     } catch (error) {
         console.error("Token verification error:", error);
         res.status(403).json({ message: "Invalid Token" });
+        return
     }
 };
-

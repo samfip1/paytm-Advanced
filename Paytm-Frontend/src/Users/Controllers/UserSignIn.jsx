@@ -238,7 +238,7 @@ const UserSignIn = () => {
                                         </svg>
                                     ) : null}
                                     {isLoading
-                                        ? "Loging Account..."
+                                        ? "Logging Account..."
                                         : "Sign In"}
                                 </button>
                             </div>

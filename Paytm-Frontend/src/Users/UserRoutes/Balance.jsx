@@ -12,38 +12,26 @@ const Balance = () => {
         try {
             setRefreshing(true);
 
-
-            let token = localStorage.getItem("authToken");
-            const decoded=jwtDecode(token);
-            const username=decoded.username;
-            // const username = localStorage.getItem("username")?.trim();
-            // const token = localStorage.getItem("authToken")?.trim(); // Use 'authToken'
-
-            console.log("Token from localStorage:", token); // DEBUG
-            console.log("Username from localStorage:", username);
-
-            if (!token) {
-                setError("Authentication token is missing. Please log in.");
-                setLoading(false);
-                setRefreshing(false);
-                navigate("/signin"); 
-                return;
-            }
-
-            let headers = {};
-                if (token) {
-                    headers['Authorization'] = `Bearer ${token}`;
-                } else if (cookie) {
-                    headers['Authorization'] = `Bearer ${cookie}`; 
-                    
-                    console.log("Using cookie for authorization")
+                let token = localStorage.getItem("authToken");
+                const decoded=jwtDecode(token);
+                const username=decoded.username;
+                console.log(username);
+                if (!token && !cookie) {
+                    console.warn("No token or cookie found. Redirecting to login.");
+                    navigate("/login");
+                    return;
                 }
 
-            const response = await axios.get(
-                `https://paytm-backend-neod.onrender.com/api/v1/user/signin/Balance/${username}`,
-                    { headers }
-            );
+                let headers = {};
+                headers['Authorization'] = `Bearer ${token}`;
 
+
+                const response = await axios.get(
+                    `https://paytm-backend-neod.onrender.com/api/v1/user/signin/Balance/${username}`,
+                    { headers }
+                );
+
+                console.log(response.data.Money)
             setBalance(response.data.Money);
             setLoading(false);
             setRefreshing(false);
