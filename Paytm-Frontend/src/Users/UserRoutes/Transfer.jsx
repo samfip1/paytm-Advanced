@@ -12,6 +12,7 @@ function Transfer() {
     const [cookies] = useCookies(["token", "username"]);
 
     const handleSubmit = async (e) => {
+        try {
         e.preventDefault();
         setError("");
         setMessage("");
@@ -21,23 +22,43 @@ function Transfer() {
             return;
         }
 
-        const Token = cookies.token;
-        const transferData  = {
-            from: cookies.username,
-                    to: toUsername,
-                    amount: parseFloat(amount),
-                    transaction_pin: parseInt(transactionPin, 10),
-                    comment: comment,
-        }
+            let token = localStorage.getItem("authToken");
+            const decoded = jwtDecode(token);
+            const username = decoded.username;
+            console.log(username);
+            const cookie = document.cookie
+                .split("; ")
+                .find((row) => row.startsWith("authCookie="))
+                ?.split("=")[1];
 
-        try {
+            
+            if (!token && !cookie) {
+                console.warn("No token or cookie found. Redirecting to login.");
+                navigate("/login");
+                return;
+            }
+
+            let headers = {};
+            if (token) {
+                headers["Authorization"] = `Bearer ${token}`;
+            } else if (cookie) {
+                headers["Authorization"] = `Bearer ${cookie}`;
+
+                console.log("Using cookie for authorization");
+            }
+
+            const transferData = {
+                from : username,
+                to : toUsername,
+                amount : amount,
+                transactionPin : transactionPin
+            }
+
+            console.log(transferData)
+
             const response = await axios.post(
                 `https://paytm-backend-neod.onrender.com/api/v1/user/signin/transfer/${transferData}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${Token}`, 
-                    },
-                }
+                { headers }
             );
 
             setMessage(response.data.message);
@@ -74,7 +95,7 @@ function Transfer() {
                         htmlFor="toUsername"
                         className="block text-gray-700 text-sm font-bold mb-2"
                     >
-                        Recipient Username:
+                        Receiver's  Username:
                     </label>
                     <input
                         type="text"
