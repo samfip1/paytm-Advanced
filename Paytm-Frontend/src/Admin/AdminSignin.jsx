@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom"; 
-import LoginAdmin from "../Components/LoginAdmin";
+import UserLogin from "../Users/Components/UserLogin";
 
 const API_ENDPOINT =
-    "https://paytm-backend-neod.onrender.com/api/v1/user/signin"; 
+    "https://paytm-backend-neod.onrender.com/api/v1/admin/signin"; 
 
-const UserSignIn = () => {
+const AdminSignin = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: "",
@@ -92,12 +92,13 @@ const UserSignIn = () => {
             console.log("Token received:", data.token); 
 
             localStorage.setItem("authToken", data.token);
-            console.log("Token stored in localStorage:", localStorage.getItem("authToken"));  
+            console.log("Token stored in localStorage:", localStorage.getItem("authToken")); 
+
 
 
             setSuccessMessage("Login successful! Redirecting...");
             setTimeout(() => {
-                navigate("/user/profile");  
+                navigate("/admin/dashboard");  
             }, 2000);
         } catch (error) {
             setApiError(error.message);
@@ -111,7 +112,7 @@ const UserSignIn = () => {
 
     return (
         <div>
-            <LoginAdmin  />
+            <UserLogin />
         <div className="flex justify-center items-center min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:p-5">
             <div className="max-w-md w-full space-y-8 ">
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -241,9 +242,9 @@ const UserSignIn = () => {
                     </div>
                     <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
                         <p className="text-sm text-gray-500">
-                            New to Paytm?{" "}
+                            New Admin?{" "}
                             <Link
-                                to="/Signup"
+                                to="/admin"
                                 className="font-medium text-indigo-600 hover:text-indigo-500"
                             >
                                 Sign Up
@@ -257,4 +258,5 @@ const UserSignIn = () => {
     );
 };
 
-export default UserSignIn;
+
+export default AdminSignin;

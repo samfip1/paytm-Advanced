@@ -1,10 +1,9 @@
 "use client";
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import LoginAdmin from "../Components/LoginAdmin";
-
-const UserSignUp = () => {
+import LoginAdmin from "../Users/Components/LoginAdmin";
+import UserLogin from "../Users/Components/UserLogin";
+const AdminSignup = () => {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -14,7 +13,6 @@ const UserSignUp = () => {
         name: "",
         email: "",
         phone: "",
-        transaction_Pin: "",
     });
 
     const [errors, setErrors] = useState({});
@@ -74,14 +72,6 @@ const UserSignUp = () => {
             newErrors.phone = "Please enter a valid 10-digit phone number";
         }
 
-        const pinRegex = /^\d{4}$/;
-        if (!formData.transaction_Pin.trim()) {
-            newErrors.transaction_Pin = "Transaction PIN is required";
-        } else if (!pinRegex.test(formData.transaction_Pin)) {
-            newErrors.transaction_Pin =
-                "Transaction PIN must be a 4-digit number";
-        }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -99,7 +89,7 @@ const UserSignUp = () => {
 
         try {
             const response = await fetch(
-                "https://paytm-backend-neod.onrender.com/api/v1/user/signup",
+                "https://paytm-backend-neod.onrender.com/api/v1/admin/signup",
                 {
                     method: "POST",
                     headers: {
@@ -111,10 +101,6 @@ const UserSignUp = () => {
                         name: formData.name,
                         email: formData.email,
                         phone: formData.phone,
-                        transaction_Pin: Number.parseInt(
-                            formData.transaction_Pin,
-                            10
-                        ),
                     }),
                 }
             );
@@ -126,14 +112,18 @@ const UserSignUp = () => {
                 console.error(
                     `API request failed with status ${response.status}: ${errorMessage}`
                 );
-                setApiError(errorMessage); 
+                setApiError(errorMessage);
                 throw new Error(errorMessage);
             }
 
             const data = await response.json();
             setSuccessMessage(
-                "Account created successfully! Redirecting to login..."
+                "Admin created successfully! Redirecting to login..."
             );
+            setTimeout(() => {
+                navigate("/admin");
+            }, 2000);
+            
 
             setFormData({
                 username: "",
@@ -142,12 +132,8 @@ const UserSignUp = () => {
                 name: "",
                 email: "",
                 phone: "",
-                transaction_Pin: "",
             });
 
-            setTimeout(() => {
-                navigate("/");
-            }, 2000);
         } catch (error) {
             console.error("API Error:", error);
             setApiError(error.message);
@@ -158,15 +144,12 @@ const UserSignUp = () => {
 
     return (
         <div>
-            <LoginAdmin />
+            <UserLogin />
         <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4 py-8">
             <div className="bg-white rounded-lg shadow-md p-6 sm:p-8 w-full max-w-md">
                 <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">
-                    Create Your Account
+                    Create Admin Account
                 </h2>
-                <p className="text-gray-600 mb-6 text-center">
-                    Join PayTM and start your financial journey
-                </p>
 
                 {apiError && (
                     <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4 text-center">
@@ -345,34 +328,6 @@ const UserSignUp = () => {
                         )}
                     </div>
 
-                    <div className="space-y-1">
-                        <label
-                            htmlFor="transaction_Pin"
-                            className="block text-sm font-medium text-gray-700"
-                        >
-                            Transaction PIN (4 digits)
-                        </label>
-                        <input
-                            type="password"
-                            id="transaction_Pin"
-                            name="transaction_Pin"
-                            value={formData.transaction_Pin}
-                            onChange={handleChange}
-                            placeholder="Create a 4-digit PIN"
-                            maxLength="4"
-                            className={`w-full px-3 py-2 border rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                errors.transaction_Pin
-                                    ? "border-red-500"
-                                    : "border-gray-300"
-                            }`}
-                        />
-                        {errors.transaction_Pin && (
-                            <p className="text-red-500 text-xs mt-1">
-                                {errors.transaction_Pin}
-                            </p>
-                        )}
-                    </div>
-
                     <button
                         type="submit"
                         className={`w-full py-3 px-4 rounded-md font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
@@ -387,10 +342,10 @@ const UserSignUp = () => {
                 </form>
 
                 <p className="mt-6 text-center text-sm text-gray-600">
-                    Already have an account?{" "}
+                    Already an Admin?{" "}
                     <button
                         onClick={() => {
-                            navigate("/");
+                            navigate("/admin/signin");
                         }}
                         className="text-blue-500 font-medium hover:underline"
                     >
@@ -403,4 +358,4 @@ const UserSignUp = () => {
     );
 };
 
-export default UserSignUp;
+export default AdminSignup;

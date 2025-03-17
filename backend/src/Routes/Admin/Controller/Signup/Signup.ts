@@ -18,7 +18,6 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-// TypeScript interface for admin signup
 interface adminSignup {
     username: string;
     password: string;
@@ -27,7 +26,7 @@ interface adminSignup {
     phone: string;
 }
 
-// Function to validate admin
+
 const isValidAdmin = async (adminuser: adminSignup) => {
     const { username, password, name, email, phone } = adminuser;
 
