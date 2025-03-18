@@ -78,8 +78,8 @@ async function betgames(money: Money) {
     return price_money;
 }
 
-router.post('/mini_games', authenticateToken, async (req, res) => {
-    const { username, bet_number_choice, input_number } = req.body;
+router.post('/mini_games/:data', authenticateToken, async (req, res) => {
+    const { username, bet_number_choice, input_number } = req.query;
 
     
     if (!username || bet_number_choice === undefined || input_number === undefined || typeof bet_number_choice !== 'number' || typeof input_number !== 'number' || input_number <= 0 || bet_number_choice <= 0) {
@@ -91,7 +91,7 @@ router.post('/mini_games', authenticateToken, async (req, res) => {
        
         const gamblingUser = await prisma.user.findUnique({
             where: {
-                username: username,
+                username : username.toString(),
             },
             select: {
                 Money: true,
