@@ -44,8 +44,8 @@ function Profile() {
 
                 if (error.response && error.response.status === 401) {
                     console.log("Token/Cookie invalid or expired. Redirecting to login.");
-                    localStorage.removeItem("authToken"); // Clear local storage
-                    document.cookie = "authCookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; // Clear cookie
+                    localStorage.removeItem("authToken");
+                    document.cookie = "authCookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                     navigate("/login");
                 } else {
                     console.error("Failed to load profile data.");

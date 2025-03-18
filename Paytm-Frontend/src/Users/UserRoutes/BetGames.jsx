@@ -1,13 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
 function BetGames() {
+    const navigate = useNavigate();
     const [username, setUsername] = useState("");
     const [betNumberChoice, setBetNumberChoice] = useState("");
     const [inputNumber, setInputNumber] = useState("");
     const [result, setResult] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [isTokenVerified, setIsTokenVerified] = useState(false);
+
+    useEffect(() => {
+        const verifyToken = async () => {
+            let token = localStorage.getItem("authToken");
+
+            if (!token) {
+                console.warn("No token found. Redirecting to login.");
+                navigate("/");
+                return;
+            }
+
+            try {
+                const decoded = jwtDecode(token);
+                const username = decoded.username;
+                setUsername(username);
+                setIsTokenVerified(true);
+                console.log("Token verified successfully. Username:", username);
+            } catch (err) {
+                console.error("Error decoding or verifying token:", err);
+                setError("Invalid token. Please login again.");
+                localStorage.removeItem("authToken");
+                navigate("/");
+            }
+        };
+
+        verifyToken();
+    }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -16,22 +47,29 @@ function BetGames() {
         setLoading(true);
 
         try {
-            const token = localStorage.getItem("token");
+            let token = localStorage.getItem("authToken");
+
+            const queryParams = new URLSearchParams({
+                username: username,
+                bet_number_choice: betNumberChoice.toString(),
+                input_number: inputNumber.toString(),
+            });
+
+            const apiUrl = `https://paytm-backend-neod.onrender.com/api/v1/user/signin/BetGames/mini_games?${queryParams.toString()}`;
 
             const response = await axios.post(
-                "https://paytm-backend-neod.onrender.com/api/v1/user/signin/BetGames/mini_games", 
-                {
-                    username: username,
-                    bet_number_choice: parseInt(betNumberChoice),
-                    input_number: parseInt(inputNumber),
-                },
+                apiUrl,
+                null, 
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
+                        "Content-Type": "application/json", 
                     },
                 }
             );
+
+
+            console.log("API Response:", response.data);
 
             if (response.data.success) {
                 setResult(`Congratulations! You won: ${response.data.prize}`);
@@ -39,22 +77,44 @@ function BetGames() {
                 setError(response.data.error);
             }
         } catch (err) {
-            console.error("Error:", err);
-            setError("An error occurred while processing your request.");
-            if (err.response && err.response.data && err.response.data.error) {
-                setError(err.response.data.error);
+            console.error("API Error:", err);
+            let errorMessage =
+                "An error occurred while processing your request.";
+
+            if (err.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                console.error("Response data:", err.response.data);
+                console.error("Response status:", err.response.status);
+
+                if (err.response.data && err.response.data.error) {
+                    errorMessage = err.response.data.error;
+                } else if (err.response.status === 401) {
+                    errorMessage = "Unauthorized access. Please login again.";
+                    localStorage.removeItem("authToken");
+                    navigate("/");
+                    return;
+                } else {
+                    errorMessage = `Server error: ${err.response.status}`;
+                }
+            } else if (err.request) {
+                // The request was made but no response was received
+                console.error("No response received:", err.request);
+                errorMessage =
+                    "No response from server. Please try again later.";
             } else {
-                setError(
-                    "An unexpected error occurred. Please check the console for details."
-                );
-                return error;
+                // Something happened in setting up the request that triggered an Error
+                errorMessage =
+                    "An unexpected error occurred. Please check console.";
             }
+
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
     };
 
-    return (
+    return isTokenVerified ? (
         <div className="min-h-screen bg-gray-100 py-6 flex items-center justify-center">
             <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md">
                 <h2 className="text-center text-2xl font-bold text-gray-700 mb-4">
@@ -77,6 +137,7 @@ function BetGames() {
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
+                            readOnly // Make username read-only since it comes from the token
                         />
                     </div>
 
@@ -145,6 +206,10 @@ function BetGames() {
                     </div>
                 )}
             </div>
+        </div>
+    ) : (
+        <div className="flex justify-center items-center h-screen">
+            <p className="text-lg font-semibold">Verifying token...</p>
         </div>
     );
 }
