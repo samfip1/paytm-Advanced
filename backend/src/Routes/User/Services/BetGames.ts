@@ -36,13 +36,13 @@ async function betgames(money: Money) {
 
         if (bet_number === money.input_number) {
             if (bet_number < 2) {
-                price_money = money.input_number + 3 * money.input_number;
+                price_money = 3 * money.input_number;
             } else if (bet_number < 4) {
-                price_money = money.input_number + 8 * money.input_number;
+                price_money = 8 * money.input_number;
             } else if (bet_number < 6) {
-                price_money = money.input_number + 20 * money.input_number;
+                price_money = 20 * money.input_number;
             } else {
-                price_money = money.input_number + 50 * money.input_number;
+                price_money = 50 * money.input_number;
             }
         } else {
             let per = 0;
@@ -61,7 +61,7 @@ async function betgames(money: Money) {
                 per = 1 * money.input_number;
             }
 
-            price_money += per;
+            price_money = per; // This is the fix!
         }
     } catch (error) {
         const errorMessage =
