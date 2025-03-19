@@ -25,8 +25,20 @@ model User {
     donation             Donation[]
     referralId           BigInt             @default(0)
     totalRequests        Int                @default(0)
-
     CreditScore Int @default(0)
+    bets            Bet[]
+}
+
+model Bet {
+    id           Int       @id @default(autoincrement())
+    userId       Int 
+    user         User      @relation(fields: [userId], references: [id]) 
+    betAmount    BigInt
+    betChoice    Int       
+    actualNumber Int       
+    won          Boolean   
+    moneyChange  BigInt    
+    timestamp    DateTime  @default(now())
 }
 
 model Transaction_Pass {

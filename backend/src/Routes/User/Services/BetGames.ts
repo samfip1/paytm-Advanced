@@ -14,66 +14,6 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-interface Money {
-    bet_number_choice: number;
-    input_number: number;
-}
-
-async function betgames(money: Money) {
-    if (money.bet_number_choice < 0 || money.input_number < 0) {
-        throw new Error("Invalid input: Values must be non-negative numbers.");
-    }
-
-    const integer_number = money.bet_number_choice;
-    const upper_limit = integer_number % 10;
-
-    let price_money = 0;
-
-    try {
-        const bet_number = Math.floor(
-            Math.random() * Math.pow(10, upper_limit)
-        );
-
-        if (bet_number === money.input_number) {
-            if (bet_number < 2) {
-                price_money = 3 * money.input_number;
-            } else if (bet_number < 4) {
-                price_money = 8 * money.input_number;
-            } else if (bet_number < 6) {
-                price_money = 20 * money.input_number;
-            } else {
-                price_money = 50 * money.input_number;
-            }
-        } else {
-            let per = 0;
-            const percentageDifference =
-                (Math.abs(bet_number - money.input_number) /
-                    money.input_number) *
-                100;
-
-            if (percentageDifference < 10) {
-                per = 2 * money.input_number;
-            } else if (percentageDifference < 20) {
-                per = 1.5 * money.input_number;
-            } else if (percentageDifference < 50) {
-                per = 1.2 * money.input_number;
-            } else {
-                per = 1 * money.input_number;
-            }
-
-            price_money = per; // This is the fix!
-        }
-    } catch (error) {
-        const errorMessage =
-            error instanceof Error
-                ? error.message
-                : "An unknown error occurred";
-        throw new Error(`Error during game execution: ${errorMessage}`);
-    }
-
-    return price_money;
-}
-
 router.post("/", authenticateToken, async (req, res) => {
     const { username, bet_number_choice, input_number } = req.body;
 
@@ -106,62 +46,83 @@ router.post("/", authenticateToken, async (req, res) => {
         });
 
         if (!gamblingUser) {
-            res.status(404).json({ success: false, error: "User not found." });
+            res.status(404).json({
+                success: false,
+                error: "User not found",
+            });
             return;
         }
 
         if (gamblingUser.Money < input_number) {
             res.status(400).json({
                 success: false,
-                error: "Insufficient funds.",
+                error: "Insufficient funds",
             });
             return;
         }
 
-        const money2: Money = { bet_number_choice, input_number };
-        const result = await betgames(money2);
+        const randomNumber = Math.floor(Math.random() * 10) + 1;
 
-        try {
-            await prisma.$transaction(async (tx) => {
-                await tx.user.update({
-                    where: { id: gamblingUser.id },
-                    data: {
-                        Money: {
-                            decrement: input_number,
-                        },
-                        CreditScore: {
-                            increment: 20,
-                        },
-                    },
-                });
+        const userWon = randomNumber === bet_number_choice;
 
-                await tx.user.update({
-                    where: { id: gamblingUser.id },
-                    data: {
-                        Money: {
-                            increment: result,
-                        },
-                    },
-                });
-            });
+        let moneyChange = 0;
+        let creditScoreChange = 0;
 
-            res.status(200).json({ success: true, prize: result });
-            return;
-        } catch (transactionError) {
-            res.status(500).json({
-                success: false,
-                error: "Transaction failed. Please try again.",
-            });
-            return;
+        if (userWon) {
+            moneyChange = input_number * 5;
+            creditScoreChange = 10;
+        } else {
+            moneyChange = -input_number;
+            creditScoreChange = -5;
         }
+
+        const updatedUser = await prisma.user.update({
+            where: {
+                id: gamblingUser.id,
+            },
+            data: {
+                Money: {
+                    increment: moneyChange,
+                },
+                CreditScore: {
+                    increment: creditScoreChange,
+                },
+            },
+            select: {
+                Money: true,
+                CreditScore: true,
+            },
+        });
+
+        await prisma.bet.create({
+            data: {
+                userId: gamblingUser.id,
+                betAmount: input_number,
+                betChoice: bet_number_choice,
+                actualNumber: randomNumber,
+                won: userWon,
+                moneyChange: moneyChange,
+                timestamp: new Date(),
+            },
+        });
+
+        res.json({
+            success: true,
+            result: {
+                won: userWon,
+                randomNumber,
+                betChoice: bet_number_choice,
+                moneyChange,
+                newBalance: updatedUser.Money,
+                newCreditScore: updatedUser.CreditScore,
+            },
+        });
+        return;
     } catch (error) {
-        const errorMessage =
-            error instanceof Error
-                ? error.message
-                : "An unknown error occurred";
+        console.error("Database error:", error);
         res.status(500).json({
             success: false,
-            error: `Internal server error: ${errorMessage}`,
+            error: "Database error occurred",
         });
         return;
     }
