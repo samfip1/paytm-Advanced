@@ -49,18 +49,22 @@ function BetGames() {
         try {
             let token = localStorage.getItem("authToken");
 
-
-            const apiUrl = `https://paytm-backend-neod.onrender.com/api/v1/user/signin/BetGames/mini_games?username=${username}&bet_number_choice=${betNumberChoice}&input_number=${inputNumber}`;
+            const apiUrl =
+                "https://paytm-backend-neod.onrender.com/api/v1/user/Signin/BetGames/";
             const response = await axios.post(
                 apiUrl,
                 {
+                    username,
+                    bet_number_choice: Number(betNumberChoice),
+                    input_number: Number(inputNumber),
+                },
+                {
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json", 
+                        "Content-Type": "application/json",
                     },
                 }
             );
-
 
             console.log("API Response:", response.data);
 
