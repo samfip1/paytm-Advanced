@@ -74,7 +74,7 @@ async function betgames(money: Money) {
 }
 
 router.post("/", authenticateToken, async (req, res) => {
-    const { username, bet_number_choice, input_number } = req.query;
+    const { username, bet_number_choice, input_number } = req.body;
 
     if (
         !username ||
