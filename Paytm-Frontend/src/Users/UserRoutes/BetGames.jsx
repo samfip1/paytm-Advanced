@@ -48,6 +48,21 @@ function BetGames() {
 
         try {
             let token = localStorage.getItem("authToken");
+            const cookie = document.cookie.split('; ').find(row => row.startsWith('authCookie='))?.split('=')[1];
+
+            if (!token && !cookie) {
+                console.warn("No token or cookie found. Redirecting to login.");
+                navigate("/login");
+                return;
+            }
+            let headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            } else if (cookie) {
+                headers['Authorization'] = `Bearer ${cookie}`; 
+                console.log("Using cookie for authorization")
+            }
+
 
             const apiUrl =
                 "https://paytm-backend-neod.onrender.com/api/v1/user/Signin/BetGames/";
@@ -79,8 +94,7 @@ function BetGames() {
                 "An error occurred while processing your request.";
 
             if (err.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
+                
                 console.error("Response data:", err.response.data);
                 console.error("Response status:", err.response.status);
 
@@ -95,12 +109,12 @@ function BetGames() {
                     errorMessage = `Server error: ${err.response.status}`;
                 }
             } else if (err.request) {
-                // The request was made but no response was received
+                
                 console.error("No response received:", err.request);
                 errorMessage =
                     "No response from server. Please try again later.";
             } else {
-                // Something happened in setting up the request that triggered an Error
+                
                 errorMessage =
                     "An unexpected error occurred. Please check console.";
             }
@@ -134,7 +148,7 @@ function BetGames() {
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
-                            readOnly // Make username read-only since it comes from the token
+                            readOnly 
                         />
                     </div>
 

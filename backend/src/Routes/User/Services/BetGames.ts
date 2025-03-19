@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { authenticateToken } from "../Middleware/auth.middleware";
 import * as dotenv from "dotenv";
+
 dotenv.config();
 const prisma = new PrismaClient();
 const app = express();
@@ -100,6 +101,7 @@ router.post("/", authenticateToken, async (req, res) => {
             select: {
                 Money: true,
                 id: true,
+                CreditScore: true,
             },
         });
 
@@ -121,7 +123,7 @@ router.post("/", authenticateToken, async (req, res) => {
 
         try {
             await prisma.$transaction(async (tx) => {
-                const updatedUser = await tx.user.update({
+                await tx.user.update({
                     where: { id: gamblingUser.id },
                     data: {
                         Money: {
@@ -141,15 +143,11 @@ router.post("/", authenticateToken, async (req, res) => {
                         },
                     },
                 });
-
-                updatedUser;
-                return;
             });
 
             res.status(200).json({ success: true, prize: result });
             return;
         } catch (transactionError) {
-            console.error("Transaction Error:", transactionError);
             res.status(500).json({
                 success: false,
                 error: "Transaction failed. Please try again.",
@@ -157,7 +155,6 @@ router.post("/", authenticateToken, async (req, res) => {
             return;
         }
     } catch (error) {
-        console.error("General Error:", error);
         const errorMessage =
             error instanceof Error
                 ? error.message

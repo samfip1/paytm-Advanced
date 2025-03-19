@@ -14,9 +14,9 @@ function Profile() {
                 const decoded=jwtDecode(token);
                 const username=decoded.username;
                 console.log(username);
-                const cookie = document.cookie.split('; ').find(row => row.startsWith('authCookie='))?.split('=')[1]; //Get cookie
+                const cookie = document.cookie.split('; ').find(row => row.startsWith('authCookie='))?.split('=')[1]; 
 
-                //Prioritize token, if not found use cookie
+                
                 if (!token && !cookie) {
                     console.warn("No token or cookie found. Redirecting to login.");
                     navigate("/login");
