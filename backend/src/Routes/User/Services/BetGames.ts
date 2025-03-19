@@ -78,12 +78,12 @@ async function betgames(money: Money) {
     return price_money;
 }
 
-router.post('/mini_games/:data', authenticateToken, async (req, res) => {
 
-
-    const { username, bet_number_choice, input_number } = req.params;
-
+router.post('/signin/BetGames/mini_games', authenticateToken, async (req, res) => {
     
+    const { username, bet_number_choice, input_number } = req.query;
+
+
     if (!username || bet_number_choice === undefined || input_number === undefined || typeof bet_number_choice !== 'number' || typeof input_number !== 'number' || input_number <= 0 || bet_number_choice <= 0) {
          res.status(400).json({ success: false, error: "Invalid input data. Please provide a valid username, bet_number_choice, and a positive input_number." });
          return
