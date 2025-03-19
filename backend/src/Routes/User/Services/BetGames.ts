@@ -79,7 +79,9 @@ async function betgames(money: Money) {
 }
 
 router.post('/mini_games/:data', authenticateToken, async (req, res) => {
-    const { username, bet_number_choice, input_number } = req.query;
+
+
+    const { username, bet_number_choice, input_number } = req.params;
 
     
     if (!username || bet_number_choice === undefined || input_number === undefined || typeof bet_number_choice !== 'number' || typeof input_number !== 'number' || input_number <= 0 || bet_number_choice <= 0) {

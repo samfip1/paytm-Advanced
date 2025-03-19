@@ -49,13 +49,13 @@ function BetGames() {
         try {
             let token = localStorage.getItem("authToken");
 
-            const queryParams = new URLSearchParams({
+            const queryParams = {
                 username: username,
                 bet_number_choice: betNumberChoice.toString(),
                 input_number: inputNumber.toString(),
-            });
+            }
 
-            const apiUrl = `https://paytm-backend-neod.onrender.com/api/v1/user/signin/BetGames/mini_games?${queryParams.toString()}`;
+            const apiUrl = `https://paytm-backend-neod.onrender.com/api/v1/user/signin/BetGames/mini_games?/${queryParams}`;
 
             const response = await axios.post(
                 apiUrl,
