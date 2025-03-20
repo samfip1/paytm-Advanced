@@ -23,7 +23,7 @@ model User {
     transaction_Pass     Transaction_Pass[]
     FraudUser            Fraud_People?
     donation             Donation[]
-    referralId           BigInt             @default(0)
+    referralId           Int             @default(0)
     totalRequests        Int                @default(0)
     CreditScore Int @default(0)
     bets            Bet[]
@@ -33,11 +33,11 @@ model Bet {
     id           Int       @id @default(autoincrement())
     userId       Int 
     user         User      @relation(fields: [userId], references: [id]) 
-    betAmount    BigInt
+    betAmount    Int
     betChoice    Int       
     actualNumber Int       
     won          Boolean   
-    moneyChange  BigInt    
+    moneyChange  Int    
     timestamp    DateTime  @default(now())
 }
 
