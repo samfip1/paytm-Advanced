@@ -76,35 +76,37 @@ router.post("/", authenticateToken, async (req, res) => {
             creditScoreChange = -5;
         }
 
-        const updatedUser = await prisma.user.update({
-            where: {
-                id: gamblingUser.id,
-            },
-            data: {
-                Money: {
-                    increment: moneyChange,
-                },
-                CreditScore: {
-                    increment: creditScoreChange,
-                },
-            },
-            select: {
-                Money: true,
-                CreditScore: true,
-            },
-        });
 
-        await prisma.bet.create({
-            data: {
-                userId: gamblingUser.id,
-                betAmount: input_number,
-                betChoice: bet_number_choice,
-                actualNumber: randomNumber,
-                won: userWon,
-                moneyChange: moneyChange,
-                timestamp: new Date(),
-            },
-        });
+        const [updatedUser, bet] = await prisma.$transaction([
+            prisma.user.update({
+                where: {
+                    id: gamblingUser.id,
+                },
+                data: {
+                    Money: {
+                        increment: moneyChange,
+                    },
+                    CreditScore: {
+                        increment: creditScoreChange,
+                    },
+                },
+                select: {
+                    Money: true,
+                    CreditScore: true,
+                },
+            }),
+            prisma.bet.create({
+                data: {
+                    userId: gamblingUser.id,
+                    betAmount: input_number,
+                    betChoice: bet_number_choice,
+                    actualNumber: randomNumber,
+                    won: userWon,
+                    moneyChange: moneyChange,
+                    timestamp: new Date(),
+                },
+            }),
+        ]);
 
         res.json({
             success: true,
@@ -117,7 +119,6 @@ router.post("/", authenticateToken, async (req, res) => {
                 newCreditScore: updatedUser.CreditScore,
             },
         });
-        return;
     } catch (error) {
         console.error("Database error:", error);
         res.status(500).json({
