@@ -23,7 +23,7 @@ model User {
     transaction_Pass     Transaction_Pass[]
     FraudUser            Fraud_People?
     donation             Donation[]
-    referralId           Int             @default(0)
+    referralId           BigInt             @default(0)
     totalRequests        Int                @default(0)
     CreditScore Int @default(0)
     bets            Bet[]

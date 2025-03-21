@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import LoginAdmin from "../Users/Components/LoginAdmin";
-import UserLogin from "../Users/Components/UserLogin";
+import LoginAdmin from "../../Users/Components/LoginAdmin";
+import UserLogin from "../../Users/Components/UserLogin";
 const AdminSignup = () => {
     const navigate = useNavigate();
 
