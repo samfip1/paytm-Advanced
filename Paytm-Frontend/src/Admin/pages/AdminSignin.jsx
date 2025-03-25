@@ -98,7 +98,7 @@ const AdminSignin = () => {
 
             setSuccessMessage("Login successful! Redirecting...");
             setTimeout(() => {
-                navigate("/admin/dashboard");  
+                navigate("/admin/");  
             }, 2000);
         } catch (error) {
             setApiError(error.message);
@@ -244,7 +244,7 @@ const AdminSignin = () => {
                         <p className="text-sm text-gray-500">
                             New Admin?{" "}
                             <Link
-                                to="/admin"
+                                to="/admin/signup"
                                 className="font-medium text-indigo-600 hover:text-indigo-500"
                             >
                                 Sign Up

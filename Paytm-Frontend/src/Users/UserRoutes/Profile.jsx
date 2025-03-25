@@ -79,12 +79,7 @@ function Profile() {
                     >
                         Check Balance
                     </button>
-                    <button
-                        className="w-full p-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition"
-                        onClick={() => navigate("/user/betgames")}
-                    >
-                        Bet on Games
-                    </button>
+
                     <button
                         className="w-full p-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition"
                         onClick={() => navigate("/user/donation")}
