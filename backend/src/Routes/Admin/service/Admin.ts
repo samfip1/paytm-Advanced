@@ -82,7 +82,6 @@ router.get('/profile', authorizeAdmin ,async (req, res) => {
         console.log(error)
     }
     
-    
 })
 
 
