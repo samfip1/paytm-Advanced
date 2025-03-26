@@ -4,76 +4,131 @@ import { useState, useEffect } from "react";
 import { Users, CreditCard, Heart, UserPlus, DollarSign } from "lucide-react";
 
 function Dashboard() {
-    
-    const API_BASE_URL = "https://paytm-backend-neod.onrender.com/api/v1/admin/signin"
+    const API_BASE_URL = "https://paytm-backend-neod.onrender.com/api/v1/admin/signin"; 
     const [userData, setUserData] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [donations, setDonations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [token, setToken] = useState(null); 
     const [debugInfo, setDebugInfo] = useState({ apiUrl: API_BASE_URL });
+
+    
+    useEffect(() => {
+        const storedToken = localStorage.getItem("authToken");
+        if (storedToken) {
+            setToken(storedToken);
+        } else {
+            console.warn(
+                "Authentication token not found in local storage on mount."
+            );
+            setError(
+                "Authentication token not found. Please login to continue."
+            );
+        }
+        setLoading(false); 
+    }, []);
+    
 
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
+            setError(null); 
+
+            console.log("Fetching dashboard data with token:", token);
+
             setDebugInfo((prev) => ({
                 ...prev,
                 apiUrl: API_BASE_URL,
                 authToken: token ? `${token.substring(0, 5)}...` : "Not found",
             }));
 
-            
-            const token = localStorage.getItem("authToken");
-
             if (!token) {
-                throw new Error("Authentication token not found");
+                console.warn(
+                    "Authentication token not found in state before API call."
+                );
+                setError(
+                    "Authentication token not found. Please login to continue."
+                );
+                setLoading(false);
+                return;
             }
 
-            
             const headers = {
-                Authorization: `Bearer ${token}`, 
+                Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
             };
 
-            
+            const userListURL = `${API_BASE_URL}/UserOperation/user_list`; 
+            const userTransactionURL = `${API_BASE_URL}/UserOperation/user_transaction`;
+            const donationListURL = `${API_BASE_URL}/ControlPanel/donation_list`;
+
             const [userResponse, transactionResponse, donationResponse] =
                 await Promise.all([
-                    fetch(`${API_BASE_URL}/UserOperation/user_list`, { headers }),
-                    fetch(`${API_BASE_URL}/UserOperation/user_transaction`, { headers }),
-                    fetch(`${API_BASE_URL}/ControlPanel/donation_list`, { headers }),
+                    fetch(userListURL, { headers }),
+                    fetch(userTransactionURL, { headers }),
+                    fetch(donationListURL, { headers }),
                 ]);
 
-            
             const checkAndParseResponse = async (response, name) => {
                 if (!response.ok) {
-                    
                     const errorText = await response.text();
                     console.error(`${name} response:`, errorText);
 
-                    
                     setDebugInfo((prev) => ({
                         ...prev,
                         [`${name}Error`]: {
                             status: response.status,
                             statusText: response.statusText,
-                            errorText: errorText.substring(0, 200), 
+                            errorText: errorText.substring(0, 200),
                         },
                     }));
 
                     throw new Error(
-                        `${name} request failed with status ${response.status}`
+                        `${name} request failed with status ${
+                            response.status
+                        }: ${errorText.substring(0, 100)}...`
                     );
                 }
 
                 const contentType = response.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
+                if (contentType && contentType.includes("application/json")) {
+                    try {
+                        const data = await response.json();
+
+                        setDebugInfo((prev) => ({
+                            ...prev,
+                            [`${name}Success`]: true,
+                            [`${name}DataSample`]:
+                                JSON.stringify(data).substring(0, 100) + "...",
+                        }));
+
+                        return data;
+                    } catch (jsonError) {
+                        console.error(
+                            `Error parsing JSON for ${name}:`,
+                            jsonError,
+                            await response.text()
+                        );
+                        const responseText = await response.text();
+                        setDebugInfo((prev) => ({
+                            ...prev,
+                            [`${name}Error`]: {
+                                jsonError: jsonError.message,
+                                responsePreview: responseText.substring(0, 200),
+                            },
+                        }));
+                        throw new Error(
+                            `Failed to parse JSON for ${name}: ${jsonError}`
+                        );
+                    }
+                } else {
                     const text = await response.text();
                     console.error(
                         `${name} returned non-JSON response:`,
                         text.substring(0, 100)
                     );
 
-                    
                     setDebugInfo((prev) => ({
                         ...prev,
                         [`${name}Error`]: {
@@ -84,18 +139,6 @@ function Dashboard() {
 
                     throw new Error(`${name} returned non-JSON response`);
                 }
-
-                const data = await response.json();
-
-                
-                setDebugInfo((prev) => ({
-                    ...prev,
-                    [`${name}Success`]: true,
-                    [`${name}DataSample`]:
-                        JSON.stringify(data).substring(0, 100) + "...",
-                }));
-
-                return data;
             };
 
             const userData = await checkAndParseResponse(
@@ -124,22 +167,22 @@ function Dashboard() {
         }
     };
 
-    useEffect(() => {
-        fetchDashboardData();
-    }, [API_BASE_URL]);
-
     
+    useEffect(() => {
+        if (token) {
+            fetchDashboardData();
+        }
+    }, [token]);
+
     const refreshData = () => {
         setLoading(true);
         setError(null);
         fetchDashboardData();
     };
 
-    
     const totalUsers = userData.length;
 
     const totalTransactions = transactions.reduce((sum, transaction) => {
-        
         const amount = Number.parseFloat(
             transaction.amount || transaction.transactionAmount || 0
         );
@@ -148,17 +191,14 @@ function Dashboard() {
 
     const totalDonations = donations
         ? donations.reduce((sum, donation) => {
-              
               const amount = Number.parseFloat(donation.DonatedMoney || 0);
               return sum + (isNaN(amount) ? 0 : amount);
           }, 0)
         : 0;
 
-    
     const getRecentActivities = () => {
         const activities = [];
 
-        
         transactions.slice(0, 5).forEach((transaction) => {
             activities.push({
                 type: "transaction",
@@ -172,7 +212,6 @@ function Dashboard() {
             });
         });
 
-        
         if (donations) {
             donations.slice(0, 5).forEach((donation) => {
                 activities.push({
@@ -184,7 +223,6 @@ function Dashboard() {
             });
         }
 
-       
         userData.slice(0, 5).forEach((user) => {
             activities.push({
                 type: "user",
@@ -194,7 +232,6 @@ function Dashboard() {
             });
         });
 
-        
         return activities.sort((a, b) => b.time - a.time).slice(0, 5);
     };
 
@@ -208,7 +245,6 @@ function Dashboard() {
         );
     }
 
-    
     if (error) {
         return (
             <div className="flex flex-col items-center justify-center h-screen p-4">
@@ -223,7 +259,10 @@ function Dashboard() {
                                 {API_BASE_URL}
                             </code>
                         </li>
-                        <li>Ensure your authentication token is valid</li>
+                        <li>
+                            Ensure you are logged in and your authentication
+                            token is valid
+                        </li>
                         <li>
                             Check browser console for detailed error messages
                         </li>
@@ -239,7 +278,6 @@ function Dashboard() {
         );
     }
 
-    
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat("en-US", {
             style: "currency",
@@ -247,7 +285,6 @@ function Dashboard() {
         }).format(amount);
     };
 
-    
     const formatRelativeTime = (date) => {
         const now = new Date();
         const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
