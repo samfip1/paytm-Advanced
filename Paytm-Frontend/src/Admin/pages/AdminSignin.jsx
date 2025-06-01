@@ -88,7 +88,7 @@ const AdminSignin = () => {
 
             const data = await response.json();
             console.log("Token received:", data.user.token);
-
+            console.log("data is : " + data)
             localStorage.setItem("authToken", data.user.token);
             console.log(
                 "Token stored in localStorage:",
